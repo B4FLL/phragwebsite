@@ -82,8 +82,22 @@ const RotateControl = L.Control.extend({
 });
 new RotateControl().addTo(map);
 
-const layers = {};
-for (const k of Object.keys(COLORS)) layers[k] = L.layerGroup().addTo(map);
+// Records older than this many years are faded and can be hidden: a patch seen long ago
+// may have grown, moved, or been treated.
+const OLD_YEARS = 5;
+const cutoff = new Date(new Date().setFullYear(new Date().getFullYear() - OLD_YEARS)).toISOString().slice(0, 10);
+const isOld = (date) => !!date && date < cutoff; // ISO strings compare correctly, even a bare "2009"
+
+// Every marker is kept here so the filters can show/hide them without refetching.
+const shown = L.layerGroup().addTo(map);
+let markers = [];
+function applyFilters() {
+  const on = {};
+  document.querySelectorAll("[data-layer]").forEach((box) => (on[box.dataset.layer] = box.checked));
+  const showOld = $("show-old").checked;
+  shown.clearLayers();
+  for (const { m, cat, old } of markers) if (on[cat] && (showOld || !old)) m.addTo(shown);
+}
 
 function row(parent, label, value) {
   const p = document.createElement("p");
@@ -95,28 +109,36 @@ function row(parent, label, value) {
 
 function gbifCategory(taxon) {
   if (/americanus/i.test(taxon)) return "native";
-  if (/subsp\. australis/i.test(taxon)) return "invasive";
+  // GBIF writes "subsp. australis", iNaturalist writes "Phragmites australis australis"
+  if (/australis (subsp\. |ssp\. )?australis/i.test(taxon)) return "invasive";
   return "unspecified";
 }
 
-function addGbif(r) {
+function addPublicRecord(r, source) {
   const cat = gbifCategory(r.taxon);
+  const old = isOld(r.date);
   const m = L.circleMarker([r.lat, r.lng], {
-    radius: 5, color: "#fff", weight: 1, fillColor: COLORS[cat], fillOpacity: 0.85,
+    radius: 5, color: "#fff", weight: 1, fillColor: COLORS[cat], fillOpacity: old ? 0.3 : 0.85,
   });
   const el = document.createElement("div");
   el.className = "popup";
   const h = document.createElement("h4");
   h.textContent = LABELS[cat];
   el.appendChild(h);
+  if (old) {
+    const w = document.createElement("p");
+    w.className = "old-warning";
+    w.textContent = `Older record (${r.date.slice(0, 4)}). The patch may have changed or been treated since.`;
+    el.appendChild(w);
+  }
   row(el, "Recorded as", r.taxon);
   if (r.date) row(el, "Date", r.date);
   if (r.dataset) row(el, "Dataset", r.dataset);
   const a = document.createElement("a");
-  a.href = r.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "View on GBIF";
+  a.href = r.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = `View on ${source}`;
   el.append(a, document.createTextNode(" · "), googleLink(r.lat, r.lng));
   m.bindPopup(el);
-  m.addTo(layers[cat]);
+  markers.push({ m, cat, old });
 }
 
 function googleLink(lat, lng) {
@@ -144,20 +166,28 @@ function addReport(r) {
   if (r.expert_note) row(el, "Expert note", r.expert_note);
   el.appendChild(googleLink(r.lat, r.lng));
   m.bindPopup(el);
-  m.addTo(layers[cat]);
+  markers.push({ m, cat, old: false });
 }
 
+const SOURCES = [
+  { file: "data/inat-utah.json", name: "iNaturalist" },
+  { file: "data/gbif-utah.json", name: "GBIF" },
+];
+
 async function load() {
-  Object.values(layers).forEach((l) => l.clearLayers());
-  let gbifCount = 0, reportCount = 0, fetched = "";
-  try {
-    const res = await fetch("data/gbif-utah.json");
-    const gbif = await res.json();
-    gbif.records.forEach(addGbif);
-    gbifCount = gbif.records.length;
-    fetched = gbif.fetched;
-  } catch (e) {
-    $("stats").textContent = "Couldn't load the GBIF records.";
+  markers = [];
+  const notes = [];
+  let publicCount = 0, reportCount = 0;
+  for (const s of SOURCES) {
+    try {
+      const data = await (await fetch(s.file)).json();
+      data.records.forEach((r) => addPublicRecord(r, s.name));
+      publicCount += data.records.length;
+      notes.push(`${s.name} (${data.fetched})`);
+    } catch (e) {
+      console.error(e);
+      notes.push(`${s.name} failed to load`);
+    }
   }
   try {
     const reports = await store.listPublic();
@@ -165,18 +195,16 @@ async function load() {
     reportCount = reports.length;
   } catch (e) {
     console.error(e);
-    $("stats").textContent = "Couldn't load community reports.";
-    return;
+    notes.push("community reports failed to load");
   }
-  $("stats").textContent = `${gbifCount.toLocaleString()} public records (GBIF, fetched ${fetched}) + ${reportCount} community report${reportCount === 1 ? "" : "s"}.`;
+  applyFilters();
+  const oldCount = markers.filter((x) => x.old).length;
+  $("stats").textContent =
+    `${publicCount.toLocaleString()} public records from ${notes.join(", ")} + ${reportCount} community report${reportCount === 1 ? "" : "s"}. ` +
+    `${oldCount.toLocaleString()} are older than ${OLD_YEARS} years.`;
 }
 
-document.querySelectorAll("[data-layer]").forEach((box) =>
-  box.addEventListener("change", () => {
-    const l = layers[box.dataset.layer];
-    box.checked ? l.addTo(map) : map.removeLayer(l);
-  })
-);
+document.querySelectorAll("[data-layer], #show-old").forEach((box) => box.addEventListener("change", applyFilters));
 
 if (demo) {
   const b = $("mode-banner");

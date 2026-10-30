@@ -7,8 +7,9 @@ Website and Utah tracking map for our FIRST LEGO League innovation project on in
 - `index.html` – project story (Problem, Research, Solution, Experts, Team, Sources)
 - `map.html`, `map.js`, `map.css` – Utah map, report form, expert verification
 - `identify.html` – guide to telling invasive from native Phragmites
-- `data/gbif-utah.json` – imported public records (1,273 Utah observations from GBIF)
-- `scripts/fetch-gbif.ps1` – re-downloads that data (see "Refreshing the data")
+- `data/inat-utah.json` – Utah observations pulled directly from iNaturalist (newest data)
+- `data/gbif-utah.json` – museum/herbarium and other records from GBIF (iNaturalist records are excluded here to avoid duplicates)
+- `scripts/fetch-inat.ps1`, `scripts/fetch-gbif.ps1` – re-download those two files (see "Refreshing the data")
 - `supabase/schema.sql` – database tables and privacy rules
 - `config.js` – database connection settings (empty = demo mode)
 
@@ -51,10 +52,11 @@ Until step 3 is done the map runs in **demo mode** (reports stay in your own bro
 ## Refreshing the data
 
 ```
+powershell -ExecutionPolicy Bypass -File scripts/fetch-inat.ps1
 powershell -ExecutionPolicy Bypass -File scripts/fetch-gbif.ps1
 ```
 
-GBIF data is licensed per record (CC0, CC-BY, or CC-BY-NC). The license is saved in each record; keep the "GBIF" credit on the site and list it in Sources.
+Records older than 5 years are drawn faded and can be hidden (`OLD_YEARS` in `map.js`). Re-run the scripts every few weeks so the map stays current. GBIF data is licensed per record (CC0, CC-BY, or CC-BY-NC); credit both GBIF and iNaturalist on the site and in Sources. We store only location, date, taxon, and link, never photos or usernames.
 
 ## Editing
 

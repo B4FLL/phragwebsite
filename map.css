@@ -47,6 +47,9 @@
 
 .rotate-bar a { font-size: 18px; font-weight: 700; text-decoration: none; }
 
+.disclaimer { font-size: 0.82rem; background: #f6f3ea; border-left: 3px solid var(--tan); padding: 8px 10px; margin: 8px 0; }
+.old-warning { color: #8a5a00; font-style: italic; }
+
 .popup h4 { margin: 0 0 4px; }
 .popup p { margin: 2px 0; }
 

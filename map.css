@@ -45,6 +45,8 @@
 .queue-actions button { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #bdb8a5; background: #fff; cursor: pointer; font: inherit; }
 .queue-actions .ok { background: var(--green); color: #fff; border-color: var(--green); }
 
+.rotate-bar a { font-size: 18px; font-weight: 700; text-decoration: none; }
+
 .popup h4 { margin: 0 0 4px; }
 .popup p { margin: 2px 0; }
 

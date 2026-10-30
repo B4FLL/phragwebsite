@@ -50,11 +50,37 @@ const store = {
 };
 
 // ---------- Map ----------
-const map = L.map("map", { preferCanvas: true }).setView([39.3, -111.6], 7);
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+// leaflet-rotate adds bearing support; touchRotate lets phones twist with two fingers.
+const map = L.map("map", { rotate: true, bearing: 0, touchRotate: true, rotateControl: false }).setView([39.3, -111.6], 7);
+const street = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 18,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
+const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+  maxZoom: 18,
+  attribution: "Tiles &copy; Esri, Maxar, Earthstar Geographics",
+});
+L.control.layers({ Street: street, Satellite: satellite }, null, { position: "topright" }).addTo(map);
+
+// Rotate buttons: 45 degrees left/right, and a compass that resets to north.
+const RotateControl = L.Control.extend({
+  options: { position: "topleft" },
+  onAdd() {
+    const bar = L.DomUtil.create("div", "leaflet-bar rotate-bar");
+    const add = (text, title, fn) => {
+      const a = L.DomUtil.create("a", "", bar);
+      a.href = "#"; a.title = title; a.textContent = text;
+      a.setAttribute("role", "button"); a.setAttribute("aria-label", title);
+      L.DomEvent.on(a, "click", (e) => { L.DomEvent.stop(e); fn(); });
+    };
+    add("↺", "Rotate left", () => map.setBearing(((map.getBearing() - 45) % 360 + 360) % 360));
+    add("↻", "Rotate right", () => map.setBearing((map.getBearing() + 45) % 360));
+    add("N", "Reset to north", () => map.setBearing(0));
+    L.DomEvent.disableClickPropagation(bar);
+    return bar;
+  },
+});
+new RotateControl().addTo(map);
 
 const layers = {};
 for (const k of Object.keys(COLORS)) layers[k] = L.layerGroup().addTo(map);
@@ -88,9 +114,16 @@ function addGbif(r) {
   if (r.dataset) row(el, "Dataset", r.dataset);
   const a = document.createElement("a");
   a.href = r.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "View on GBIF";
-  el.appendChild(a);
+  el.append(a, document.createTextNode(" · "), googleLink(r.lat, r.lng));
   m.bindPopup(el);
   m.addTo(layers[cat]);
+}
+
+function googleLink(lat, lng) {
+  const a = document.createElement("a");
+  a.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  a.target = "_blank"; a.rel = "noopener"; a.textContent = "Open in Google Maps";
+  return a;
 }
 
 function addReport(r) {
@@ -109,6 +142,7 @@ function addReport(r) {
   row(el, "Size", SIZES[r.patch_size] || r.patch_size);
   if (r.notes) row(el, "Notes", r.notes);
   if (r.expert_note) row(el, "Expert note", r.expert_note);
+  el.appendChild(googleLink(r.lat, r.lng));
   m.bindPopup(el);
   m.addTo(layers[cat]);
 }

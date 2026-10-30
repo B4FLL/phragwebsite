@@ -1,0 +1,55 @@
+/* Map page layout: sidebar + map, stacked on phones */
+.map-page .site-footer { display: none; }
+
+.map-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  height: calc(100vh - 60px);
+}
+
+.panel {
+  overflow-y: auto;
+  padding: 16px 20px 40px;
+  background: #fff;
+  border-right: 1px solid #ddd8c8;
+}
+
+.panel h2 { margin: 0 0 4px; font-size: 1.4rem; }
+.panel h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+.panel label { display: block; margin: 10px 0; font-size: 0.9rem; font-weight: 600; }
+.panel input[type="text"], .panel input[type="date"], .panel input[type="email"],
+.panel select, .panel textarea {
+  display: block; width: 100%; margin-top: 4px; padding: 8px;
+  font: inherit; font-weight: 400; border: 1px solid #bdb8a5; border-radius: 6px;
+}
+.panel .filter { font-weight: 400; display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.small { font-size: 0.85rem; color: var(--muted); margin: 6px 0; }
+.muted-line { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.hp { position: absolute; left: -9999px; }
+
+.small-btn { margin-top: 6px; padding: 9px 16px; border: 0; font: inherit; font-weight: 600; cursor: pointer; }
+.link-btn { background: none; border: 0; color: var(--green); text-decoration: underline; cursor: pointer; font: inherit; font-size: 0.9rem; padding: 6px 4px; }
+.banner { background: #fff3cd; border: 1px solid #e6cf7a; border-radius: 6px; padding: 8px 10px; font-size: 0.85rem; margin: 0 0 12px; }
+
+#map { height: 100%; width: 100%; }
+
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: none; }
+.dot.invasive { background: #c0392b; }
+.dot.native { background: #2a6fb0; }
+.dot.unspecified { background: #8a8a80; }
+.dot.unsure { background: #d89a1b; }
+
+.queue-item { border: 1px solid #ddd8c8; border-radius: 8px; padding: 10px; margin: 8px 0; font-size: 0.88rem; }
+.queue-item p { margin: 2px 0; }
+.queue-actions { display: flex; gap: 6px; margin-top: 8px; }
+.queue-actions button { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #bdb8a5; background: #fff; cursor: pointer; font: inherit; }
+.queue-actions .ok { background: var(--green); color: #fff; border-color: var(--green); }
+
+.popup h4 { margin: 0 0 4px; }
+.popup p { margin: 2px 0; }
+
+@media (max-width: 760px) {
+  .map-layout { grid-template-columns: 1fr; grid-template-rows: 55vh auto; height: auto; }
+  #map { order: -1; height: 55vh; }
+  .panel { border-right: 0; overflow: visible; }
+}

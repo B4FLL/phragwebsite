@@ -16,4 +16,5 @@ nav.querySelectorAll("a").forEach((link) => {
 });
 
 // Footer year
-document.getElementById("year").textContent = new Date().getFullYear();
+const year = document.getElementById("year");
+if (year) year.textContent = new Date().getFullYear();

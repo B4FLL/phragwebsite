@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Utah Phragmites Map</title>
+  <meta name="description" content="Map of Phragmites sightings across Utah. Report a sighting or verify reports as an expert.">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="map.css">
+</head>
+<body class="map-page">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">Phragmites Project</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav">
+        <a href="index.html#problem">The Problem</a>
+        <a href="index.html#research">Research</a>
+        <a href="index.html#solution">Our Solution</a>
+        <a href="map.html" aria-current="page">Map</a>
+        <a href="identify.html">Identify</a>
+        <a href="index.html#sources">Sources</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="map-layout">
+    <aside class="panel">
+      <p id="mode-banner" class="banner" hidden></p>
+
+      <section>
+        <h2>Utah Phragmites map</h2>
+        <p id="stats" class="muted-line">Loading…</p>
+      </section>
+
+      <section>
+        <h3>Show on map</h3>
+        <label class="filter"><input type="checkbox" data-layer="invasive" checked> <span class="dot invasive"></span> Invasive (subsp. <em>australis</em>)</label>
+        <label class="filter"><input type="checkbox" data-layer="native" checked> <span class="dot native"></span> Native (subsp. <em>americanus</em>)</label>
+        <label class="filter"><input type="checkbox" data-layer="unspecified" checked> <span class="dot unspecified"></span> Not identified to subspecies</label>
+        <label class="filter"><input type="checkbox" data-layer="unsure" checked> <span class="dot unsure"></span> Community report, unsure</label>
+        <p class="small">Small dots are public records from <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF</a> (iNaturalist, museums, herbaria). Large dots are reports from this site; a solid outline means an expert verified it.</p>
+      </section>
+
+      <section>
+        <h3>Report a sighting</h3>
+        <p class="small">Not sure it's invasive? Check the <a href="identify.html">identification guide</a> first. Mark "not sure" if in doubt — experts will review.</p>
+        <button id="pick-btn" class="button small-btn" type="button">Place a pin on the map</button>
+        <form id="report-form" hidden>
+          <p id="pick-info" class="small"></p>
+          <button id="gps-btn" type="button" class="link-btn">Use my current location</button>
+
+          <label>Date seen
+            <input type="date" name="observed_on" required>
+          </label>
+          <label>What do you think it is?
+            <select name="id_guess" required>
+              <option value="unsure">Not sure</option>
+              <option value="invasive">Invasive Phragmites</option>
+              <option value="native">Native Phragmites</option>
+            </select>
+          </label>
+          <label>Patch size
+            <select name="patch_size" required>
+              <option value="single">A few stems</option>
+              <option value="small">Small patch (under 10 m²)</option>
+              <option value="medium">Medium (10–100 m²)</option>
+              <option value="large">Large stand (over 100 m²)</option>
+            </select>
+          </label>
+          <label>Notes (habitat, color, anything unusual)
+            <textarea name="notes" rows="3" maxlength="1000"></textarea>
+          </label>
+          <label>Your name (optional)
+            <input type="text" name="reporter" maxlength="80" autocomplete="name">
+          </label>
+          <!-- Spam trap: real people never fill this in. -->
+          <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <p class="small">Public maps show locations rounded to about 1 km to protect private land.</p>
+          <button class="button small-btn" type="submit">Submit report</button>
+          <button class="link-btn" type="button" id="cancel-btn">Cancel</button>
+          <p id="form-msg" class="small" role="status"></p>
+        </form>
+      </section>
+
+      <section id="expert-section">
+        <h3>Expert verification</h3>
+        <div id="expert-login">
+          <p class="small">Experts: sign in with your email to review reports.</p>
+          <form id="login-form">
+            <input type="email" name="email" placeholder="you@example.org" required>
+            <button class="button small-btn" type="submit">Email me a sign-in link</button>
+          </form>
+          <p id="login-msg" class="small" role="status"></p>
+        </div>
+        <div id="expert-queue" hidden>
+          <p class="small"><span id="expert-email"></span> · <button class="link-btn" id="logout-btn" type="button">Sign out</button></p>
+          <div id="queue"></div>
+        </div>
+      </section>
+    </aside>
+
+    <div id="map" aria-label="Map of Phragmites sightings in Utah"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script src="map.js"></script>
+</body>
+</html>

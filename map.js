@@ -1,9 +1,7 @@
 // Utah Phragmites map: GBIF records + community reports + expert verification.
 // With no Supabase keys in config.js this runs in demo mode (reports stay in this browser).
 
-const cfg = window.PHRAG_CONFIG || {};
-const demo = !cfg.supabaseUrl || !cfg.supabaseKey;
-const sb = demo ? null : window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
+const { demo, sb, getMember } = window.phrag; // shared sign-in client from auth.js
 
 const COLORS = { invasive: "#c0392b", native: "#2a6fb0", unspecified: "#8a8a80", unsure: "#d89a1b" };
 const LABELS = { invasive: "Invasive Phragmites", native: "Native Phragmites", unsure: "Not sure", unspecified: "Not identified to subspecies" };
@@ -226,8 +224,17 @@ function setPin(latlng) {
   else {
     pin = L.marker(latlng, { draggable: true }).addTo(map);
     pin.on("dragend", () => setPin(pin.getLatLng()));
+    pin.on("click", removePin);
   }
-  $("pick-info").textContent = `Pin at ${lat.toFixed(4)}, ${lng.toFixed(4)}. Drag it to adjust.`;
+  $("pick-info").textContent = `Pin at ${lat.toFixed(4)}, ${lng.toFixed(4)}. Drag it to adjust, or click the pin to remove it.`;
+}
+
+// Clicking the pin removes it but keeps the form open so a new spot can be chosen.
+function removePin() {
+  if (!pin) return;
+  map.removeLayer(pin);
+  pin = null;
+  $("pick-info").textContent = "Pin removed. Click the map to place a new one.";
 }
 
 function closeForm() {
@@ -248,6 +255,7 @@ $("pick-btn").addEventListener("click", () => {
   map.on("click", onMapClick);
 });
 $("cancel-btn").addEventListener("click", closeForm);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !form.hidden) closeForm(); });
 
 $("gps-btn").addEventListener("click", () => {
   if (!navigator.geolocation) { $("pick-info").textContent = "Your browser can't share location."; return; }
@@ -320,29 +328,17 @@ async function renderQueue() {
   }
 }
 
-function showExpert(email) {
-  $("expert-login").hidden = true;
-  $("expert-queue").hidden = false;
-  $("expert-email").textContent = email || "Demo expert";
-  renderQueue();
-}
 
-$("login-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  if (demo) { showExpert(); return; }
-  const email = e.target.email.value.trim();
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href.split("#")[0] } });
-  $("login-msg").textContent = error ? "Couldn't send the link. Try again." : "Check your email for the sign-in link.";
-});
 
-$("logout-btn").addEventListener("click", async () => {
-  if (sb) await sb.auth.signOut();
-  $("expert-queue").hidden = true;
-  $("expert-login").hidden = false;
-});
-
-if (sb) {
-  sb.auth.getSession().then(({ data }) => { if (data.session) showExpert(data.session.user.email); });
-}
+// Experts see the review queue; everyone else never sees this section.
+(async function showExpertQueue() {
+  try {
+    const member = await getMember();
+    if (!member || !member.isExpert) return;
+    $("expert-section").hidden = false;
+    $("expert-email").textContent = member.email;
+    renderQueue();
+  } catch (e) { console.error(e); }
+})();
 
 load();

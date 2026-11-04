@@ -210,3 +210,39 @@ a {
     padding: 10px 0;
   }
 }
+
+/* Member pages and editing */
+.narrow { max-width: 560px; }
+.stack { display: grid; gap: 12px; margin: 16px 0; }
+.stack label { display: block; font-weight: 600; font-size: 0.95rem; }
+.stack input { display: block; width: 100%; margin-top: 4px; padding: 10px; font: inherit; border: 1px solid #bdb8a5; border-radius: 6px; }
+.stack .button { border: 0; font: inherit; font-weight: 600; cursor: pointer; text-align: center; margin-top: 0; }
+.notice { background: #fff3cd; border: 1px solid #e6cf7a; border-radius: 6px; padding: 10px 12px; font-size: 0.9rem; }
+.link-btn { background: none; border: 0; color: var(--green); text-decoration: underline; cursor: pointer; font: inherit; padding: 6px 0; }
+[hidden] { display: none !important; }
+
+.slot { margin: 24px 0; }
+.slot img { display: block; max-width: 100%; max-height: 420px; border-radius: var(--radius); }
+.slot:not(.has-image) { display: none !important; }
+
+.cms-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  padding: 10px 16px; background: var(--green-dark); color: #fff;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.25);
+}
+.cms-bar button { padding: 8px 14px; border: 1px solid #e6efe8; border-radius: 6px; background: transparent; color: #fff; font: inherit; cursor: pointer; }
+.cms-bar button.cms-primary { background: var(--tan); color: var(--green-dark); border-color: var(--tan); font-weight: 600; }
+.cms-bar button:disabled { opacity: 0.6; cursor: wait; }
+.cms-bar a { color: #e6efe8; margin-left: auto; }
+.cms-status { font-size: 0.9rem; color: #e6efe8; }
+
+body.editing { padding-bottom: 80px; }
+.editing [data-edit] { outline: 2px dashed var(--tan); outline-offset: 3px; cursor: text; min-height: 1em; }
+.editing [data-edit]:focus { outline: 2px solid var(--green); background: rgba(255, 251, 232, 0.9); color: var(--text); }
+.editing [data-edit]:empty::before { content: "(empty - click to type)"; font-style: italic; opacity: 0.6; }
+.editing .slot { position: relative; display: block !important; cursor: pointer; outline: 2px dashed var(--tan); outline-offset: 3px; }
+.editing .slot:not(.has-image) { padding: 36px 12px; text-align: center; background: #fff; color: var(--muted); }
+.editing .slot:not(.has-image)::before { content: "Click to add a photo"; }
+.editing .slot.has-image .slot-remove { display: block; }
+.slot-remove { display: none; position: absolute; top: 8px; right: 8px; padding: 6px 10px; border: 0; border-radius: 6px; background: rgba(0, 0, 0, 0.7); color: #fff; font: inherit; font-size: 0.85rem; cursor: pointer; }

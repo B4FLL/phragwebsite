@@ -19,6 +19,7 @@
         <a href="map.html">Map</a>
         <a href="identify.html" aria-current="page">Identify</a>
         <a href="index.html#sources">Sources</a>
+        <a href="login.html">Members</a>
       </nav>
     </div>
   </header>
@@ -38,25 +39,25 @@
           <article class="card">
             <h3>Invasive (subsp. <em>australis</em>)</h3>
             <ul>
-              <li>Stems are tan or straw-colored, dull and rough with ridges.</li>
-              <li>Old leaf sheaths stay stuck to the stem, even in winter.</li>
-              <li>Grows in dense stands with almost no other plants mixed in.</li>
-              <li>Often taller, up to about 4–5 m (13–16 ft).</li>
-              <li>Seed heads are full and dense, gray to purplish.</li>
+              <li data-edit="id-point-1">Stems are tan or straw-colored, dull and rough with ridges.</li>
+              <li data-edit="id-point-2">Old leaf sheaths stay stuck to the stem, even in winter.</li>
+              <li data-edit="id-point-3">Grows in dense stands with almost no other plants mixed in.</li>
+              <li data-edit="id-point-4">Often taller, up to about 4–5 m (13–16 ft).</li>
+              <li data-edit="id-point-5">Seed heads are full and dense, gray to purplish.</li>
             </ul>
           </article>
           <article class="card">
             <h3>Native (subsp. <em>americanus</em>)</h3>
             <ul>
-              <li>Stems are smooth and shiny, often reddish-brown near the base.</li>
-              <li>Old leaf sheaths fall off easily, leaving bare stems.</li>
-              <li>Grows in smaller, looser patches mixed with other wetland plants.</li>
-              <li>Usually shorter, around 2–3 m (6–10 ft).</li>
-              <li>Seed heads are sparser.</li>
+              <li data-edit="id-point-6">Stems are smooth and shiny, often reddish-brown near the base.</li>
+              <li data-edit="id-point-7">Old leaf sheaths fall off easily, leaving bare stems.</li>
+              <li data-edit="id-point-8">Grows in smaller, looser patches mixed with other wetland plants.</li>
+              <li data-edit="id-point-9">Usually shorter, around 2–3 m (6–10 ft).</li>
+              <li data-edit="id-point-10">Seed heads are sparser.</li>
             </ul>
           </article>
         </div>
-        <p style="margin-top:30px">
+        <p style="margin-top:30px" data-edit="id-note">
           Stem color and leaf sheaths are the easiest clues and they are not perfect. A positive ID can
           require a close look at the plant's tiny parts or a DNA test.
           <!-- TODO: Replace this guide's wording with what our expert interviews confirmed, and cite it in Sources. -->
@@ -71,6 +72,10 @@
   <footer class="site-footer">
     <div class="container"><p>&copy; <span id="year"></span> Phragmites Project · FIRST LEGO League</p></div>
   </footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
   <script src="script.js"></script>
+  <script src="cms.js"></script>
 </body>
 </html>

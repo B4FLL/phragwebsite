@@ -20,6 +20,7 @@
         <a href="index.html#solution">Our Solution</a>
         <a href="map.html" aria-current="page">Map</a>
         <a href="identify.html">Identify</a>
+        <a href="login.html">Members</a>
         <a href="index.html#sources">Sources</a>
       </nav>
     </div>
@@ -86,20 +87,11 @@
         </form>
       </section>
 
-      <section id="expert-section">
+      <!-- Only shown to signed-in experts (sign in on the Members page). -->
+      <section id="expert-section" hidden>
         <h3>Expert verification</h3>
-        <div id="expert-login">
-          <p class="small">Experts: sign in with your email to review reports.</p>
-          <form id="login-form">
-            <input type="email" name="email" placeholder="you@example.org" required>
-            <button class="button small-btn" type="submit">Email me a sign-in link</button>
-          </form>
-          <p id="login-msg" class="small" role="status"></p>
-        </div>
-        <div id="expert-queue" hidden>
-          <p class="small"><span id="expert-email"></span> · <button class="link-btn" id="logout-btn" type="button">Sign out</button></p>
-          <div id="queue"></div>
-        </div>
+        <p class="small"><span id="expert-email"></span> · <a href="login.html">Member page</a></p>
+        <div id="queue"></div>
       </section>
     </aside>
 
@@ -110,6 +102,7 @@
   <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="config.js"></script>
+  <script src="auth.js"></script>
   <script src="script.js"></script>
   <script src="map.js"></script>
 </body>

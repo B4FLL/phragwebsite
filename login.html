@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Member Login</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">Phragmites Project</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav">
+        <a href="index.html">Home</a>
+        <a href="map.html">Map</a>
+        <a href="identify.html">Identify</a>
+        <a href="login.html" aria-current="page">Members</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="container narrow">
+        <h2>Member login</h2>
+        <p id="demo-note" class="notice" hidden>
+          Demo mode: the database isn't connected yet, so signing in and editing only affect
+          this browser. See the README to connect Supabase.
+        </p>
+
+        <div id="signed-out" hidden>
+          <p>Team members and experts sign in with an email link. No password needed.</p>
+          <form id="login-form" class="stack">
+            <label>Email
+              <input type="email" name="email" placeholder="you@example.org" autocomplete="email" required>
+            </label>
+            <button class="button" type="submit">Email me a sign-in link</button>
+          </form>
+          <button id="demo-btn" class="button" type="button" hidden>Sign in as demo member</button>
+          <p id="login-msg" role="status"></p>
+        </div>
+
+        <div id="signed-in" hidden>
+          <p>Signed in as <strong id="who"></strong>.</p>
+          <p id="no-role" class="notice" hidden>
+            You're signed in, but you haven't been added as a member yet. Ask a team admin
+            to add your account, then reload this page.
+          </p>
+          <div id="actions" class="stack">
+            <a id="edit-link" class="button" href="index.html" hidden>Edit the website</a>
+            <a id="review-link" class="button" href="map.html" hidden>Review map reports</a>
+          </div>
+          <p><button id="logout-btn" class="link-btn" type="button">Sign out</button></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><p>&copy; <span id="year"></span> Phragmites Project · FIRST LEGO League</p></div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="script.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>

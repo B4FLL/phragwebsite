@@ -8,6 +8,11 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!--
+    Editing note: anything with data-edit="..." or data-edit-img="..." can be changed by
+    signed-in members from the website itself (login.html), no code needed. The text written
+    here is only the starting default. Once a member saves, the saved version wins.
+  -->
   <header class="site-header">
     <div class="container header-inner">
       <a class="logo" href="#top">Phragmites Project</a>
@@ -21,6 +26,7 @@
         <a href="#experts">Experts</a>
         <a href="#team">Team</a>
         <a href="#sources">Sources</a>
+        <a href="login.html">Members</a>
       </nav>
     </div>
   </header>
@@ -28,9 +34,9 @@
   <main id="top">
     <section class="hero">
       <div class="container">
-        <p class="eyebrow">FIRST LEGO League Innovation Project</p>
-        <h1>Taking on invasive Phragmites</h1>
-        <p class="lead">
+        <p class="eyebrow" data-edit="hero-eyebrow">FIRST LEGO League Innovation Project</p>
+        <h1 data-edit="hero-title">Taking on invasive Phragmites</h1>
+        <p class="lead" data-edit="hero-lead">
           Invasive Phragmites is a tall reed that takes over wetlands and shorelines,
           crowding out native plants and the animals that depend on them.
           This is how our team is working on the problem.
@@ -41,7 +47,7 @@
 
     <section id="problem" class="section">
       <div class="container">
-        <h2>The Problem</h2>
+        <h2 data-edit="problem-heading">The Problem</h2>
         <p>
           <em>Phragmites australis</em>, also called common reed, has a non-native strain
           that spreads quickly across North American wetlands. It can grow more than
@@ -50,16 +56,16 @@
         </p>
         <div class="cards">
           <article class="card">
-            <h3>Spreads fast</h3>
-            <p>It spreads through seeds and long underground stems (rhizomes), so one patch can quickly become many.</p>
+            <h3 data-edit="problem-1-title">Spreads fast</h3>
+            <p data-edit="problem-1-text">It spreads through seeds and long underground stems (rhizomes), so one patch can quickly become many.</p>
           </article>
           <article class="card">
-            <h3>Hurts habitat</h3>
-            <p>Thick stands replace the mix of native plants that birds, fish, and insects need for food and shelter.</p>
+            <h3 data-edit="problem-2-title">Hurts habitat</h3>
+            <p data-edit="problem-2-text">Thick stands replace the mix of native plants that birds, fish, and insects need for food and shelter.</p>
           </article>
           <article class="card">
-            <h3>Hard to remove</h3>
-            <p>Cutting it down isn't enough — the roots survive and regrow, so control takes years of effort.</p>
+            <h3 data-edit="problem-3-title">Hard to remove</h3>
+            <p data-edit="problem-3-text">Cutting it down isn't enough — the roots survive and regrow, so control takes years of effort.</p>
           </article>
         </div>
       </div>
@@ -67,39 +73,41 @@
 
     <section id="research" class="section alt">
       <div class="container">
-        <h2>Our Research</h2>
-        <p>
-          <!-- TODO: Describe how the team researched the problem. -->
+        <h2 data-edit="research-heading">Our Research</h2>
+        <p data-edit="research-text">
           Write about what you learned: where you found Phragmites near you,
           what methods are used to control it today, and what problems those methods have.
         </p>
+        <figure class="slot" data-edit-img="research-photo" data-alt="Our research"><img alt=""></figure>
         <ul class="checklist">
-          <li>Where we observed Phragmites</li>
-          <li>Current control methods we studied</li>
-          <li>Gaps we found in existing solutions</li>
+          <li data-edit="research-point-1">Where we observed Phragmites</li>
+          <li data-edit="research-point-2">Current control methods we studied</li>
+          <li data-edit="research-point-3">Gaps we found in existing solutions</li>
+          <li data-edit="research-point-4"></li>
+          <li data-edit="research-point-5"></li>
         </ul>
       </div>
     </section>
 
     <section id="solution" class="section">
       <div class="container">
-        <h2>Our Solution</h2>
-        <p>
-          <!-- TODO: Describe the team's innovation. -->
+        <h2 data-edit="solution-heading">Our Solution</h2>
+        <p data-edit="solution-text">
           Explain your idea here: what it is, how it works, and why it's better than what exists now.
         </p>
+        <figure class="slot" data-edit-img="solution-photo" data-alt="Our solution"><img alt=""></figure>
         <div class="cards">
           <article class="card">
-            <h3>What it is</h3>
-            <p>A short description of your invention or idea.</p>
+            <h3 data-edit="solution-1-title">What it is</h3>
+            <p data-edit="solution-1-text">A short description of your invention or idea.</p>
           </article>
           <article class="card">
-            <h3>How it works</h3>
-            <p>The steps or parts that make it work.</p>
+            <h3 data-edit="solution-2-title">How it works</h3>
+            <p data-edit="solution-2-text">The steps or parts that make it work.</p>
           </article>
           <article class="card">
-            <h3>Testing &amp; iteration</h3>
-            <p>How you tested it and what you changed based on the results.</p>
+            <h3 data-edit="solution-3-title">Testing &amp; iteration</h3>
+            <p data-edit="solution-3-text">How you tested it and what you changed based on the results.</p>
           </article>
         </div>
       </div>
@@ -107,18 +115,38 @@
 
     <section id="experts" class="section alt">
       <div class="container">
-        <h2>Experts We Talked To</h2>
-        <!-- TODO: Add each expert the team interviewed. -->
+        <h2 data-edit="experts-heading">Experts We Talked To</h2>
+        <!-- Cards with empty text are hidden from visitors. To add an expert, fill in a blank card. -->
         <div class="cards">
           <article class="card">
-            <h3>Expert name</h3>
-            <p class="muted">Role / organization</p>
-            <p>What we learned from them and how it changed our project.</p>
+            <h3 data-edit="expert-1-name">Expert name</h3>
+            <p class="muted" data-edit="expert-1-role">Role / organization</p>
+            <p data-edit="expert-1-text">What we learned from them and how it changed our project.</p>
           </article>
           <article class="card">
-            <h3>Expert name</h3>
-            <p class="muted">Role / organization</p>
-            <p>What we learned from them and how it changed our project.</p>
+            <h3 data-edit="expert-2-name">Expert name</h3>
+            <p class="muted" data-edit="expert-2-role">Role / organization</p>
+            <p data-edit="expert-2-text">What we learned from them and how it changed our project.</p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="expert-3-name"></h3>
+            <p class="muted" data-edit="expert-3-role"></p>
+            <p data-edit="expert-3-text"></p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="expert-4-name"></h3>
+            <p class="muted" data-edit="expert-4-role"></p>
+            <p data-edit="expert-4-text"></p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="expert-5-name"></h3>
+            <p class="muted" data-edit="expert-5-role"></p>
+            <p data-edit="expert-5-text"></p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="expert-6-name"></h3>
+            <p class="muted" data-edit="expert-6-role"></p>
+            <p data-edit="expert-6-text"></p>
           </article>
         </div>
       </div>
@@ -126,20 +154,72 @@
 
     <section id="team" class="section">
       <div class="container">
-        <h2>Our Team</h2>
-        <p>
-          <!-- TODO: Add team name, number, and members. -->
+        <h2 data-edit="team-heading">Our Team</h2>
+        <p data-edit="team-text">
           Team name &amp; number — a short intro about who you are.
         </p>
+        <figure class="slot" data-edit-img="team-photo" data-alt="Our team"><img alt=""></figure>
+        <!-- Cards with empty text are hidden from visitors. To add a member, fill in a blank card. -->
+        <div class="cards">
+          <article class="card" data-optional>
+            <h3 data-edit="member-1-name"></h3>
+            <p class="muted" data-edit="member-1-role"></p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="member-2-name"></h3>
+            <p class="muted" data-edit="member-2-role"></p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="member-3-name"></h3>
+            <p class="muted" data-edit="member-3-role"></p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="member-4-name"></h3>
+            <p class="muted" data-edit="member-4-role"></p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="member-5-name"></h3>
+            <p class="muted" data-edit="member-5-role"></p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="member-6-name"></h3>
+            <p class="muted" data-edit="member-6-role"></p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="member-7-name"></h3>
+            <p class="muted" data-edit="member-7-role"></p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="member-8-name"></h3>
+            <p class="muted" data-edit="member-8-role"></p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="member-9-name"></h3>
+            <p class="muted" data-edit="member-9-role"></p>
+          </article>
+          <article class="card" data-optional>
+            <h3 data-edit="member-10-name"></h3>
+            <p class="muted" data-edit="member-10-role"></p>
+          </article>
+        </div>
       </div>
     </section>
 
     <section id="sources" class="section alt">
       <div class="container">
-        <h2>Sources</h2>
-        <!-- TODO: List every source used for the project. -->
+        <h2 data-edit="sources-heading">Sources</h2>
+        <!-- Empty entries are hidden from visitors. Fill in a blank one to add a source. -->
         <ol class="sources">
-          <li>Source title, author/organization, link, date accessed</li>
+          <li data-edit="source-1">Source title, author/organization, link, date accessed</li>
+          <li data-edit="source-2">iNaturalist observations, inaturalist.org (Utah, Phragmites australis), accessed via the iNaturalist API</li>
+          <li data-edit="source-3">GBIF.org occurrence records (Phragmites australis, Utah), gbif.org</li>
+          <li data-edit="source-4"></li>
+          <li data-edit="source-5"></li>
+          <li data-edit="source-6"></li>
+          <li data-edit="source-7"></li>
+          <li data-edit="source-8"></li>
+          <li data-edit="source-9"></li>
+          <li data-edit="source-10"></li>
         </ol>
       </div>
     </section>
@@ -151,6 +231,10 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
   <script src="script.js"></script>
+  <script src="cms.js"></script>
 </body>
 </html>

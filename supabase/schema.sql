@@ -1,6 +1,7 @@
--- Run once in Supabase: Dashboard > SQL Editor > New query > paste > Run.
+-- Run in Supabase: Dashboard > SQL Editor > New query > paste > Run.
+-- Safe to run more than once: it skips anything that already exists.
 
-create table public.reports (
+create table if not exists public.reports (
   id           uuid primary key default gen_random_uuid(),
   created_at   timestamptz not null default now(),
   lat          double precision not null check (lat between 36.9 and 42.1),
@@ -16,7 +17,7 @@ create table public.reports (
 );
 
 -- People allowed to verify reports. Add a row per expert (their auth.users id).
-create table public.experts (
+create table if not exists public.experts (
   user_id uuid primary key references auth.users(id) on delete cascade
 );
 
@@ -24,26 +25,30 @@ alter table public.reports enable row level security;
 alter table public.experts enable row level security;
 
 -- Anyone may submit, but only as "unverified".
+drop policy if exists "anyone can submit" on public.reports;
 create policy "anyone can submit" on public.reports
   for insert to anon, authenticated
   with check (status = 'unverified' and verified_by is null and expert_note is null);
 
 -- Experts can read exact data and change status.
+drop policy if exists "experts read" on public.reports;
 create policy "experts read" on public.reports
   for select to authenticated
   using (exists (select 1 from public.experts e where e.user_id = auth.uid()));
 
+drop policy if exists "experts update" on public.reports;
 create policy "experts update" on public.reports
   for update to authenticated
   using (exists (select 1 from public.experts e where e.user_id = auth.uid()))
   with check (exists (select 1 from public.experts e where e.user_id = auth.uid()));
 
+drop policy if exists "experts see own row" on public.experts;
 create policy "experts see own row" on public.experts
   for select to authenticated using (user_id = auth.uid());
 
 -- Public map reads this view: coordinates rounded to 2 decimals (~1 km) to
 -- protect private land, and rejected reports are hidden.
-create view public.public_reports as
+create or replace view public.public_reports as
   select id, round(lat::numeric, 2)::float8 as lat, round(lng::numeric, 2)::float8 as lng,
          observed_on, id_guess, patch_size, notes, status, expert_note, created_at
   from public.reports

@@ -10,6 +10,7 @@ Website and Utah tracking map for our FIRST LEGO League innovation project on in
 - `login.html`, `login.js` – member sign-in (email link)
 - `auth.js` – shared sign-in code; `cms.js` – lets members edit text and photos on the page
 - `supabase/cms.sql` – tables and rules for editable content and photos
+- `supabase/members.sql` – approved-email list for editors and experts
 - `data/inat-utah.json` – Utah observations pulled directly from iNaturalist (newest data)
 - `data/gbif-utah.json` – museum/herbarium and other records from GBIF (iNaturalist records are excluded here to avoid duplicates)
 - `scripts/fetch-inat.ps1`, `scripts/fetch-gbif.ps1` – re-download those two files (see "Refreshing the data")
@@ -37,7 +38,7 @@ In PowerShell, any static server works; VS Code's "Live Server" extension is the
 GitHub Pages only serves static files, so community reports are stored in Supabase (free tier).
 
 1. Make a project at supabase.com.
-2. **SQL Editor**: paste and run `supabase/schema.sql`, then run `supabase/cms.sql` as a second query.
+2. **SQL Editor**: paste and run `supabase/schema.sql`, then run `supabase/cms.sql` as a second query, then `supabase/members.sql` as a third.
 3. **Project Settings > API**: copy the Project URL and the `anon` public key into `config.js`.
 4. **Authentication > URL Configuration**: set Site URL to your GitHub Pages address.
 5. Add members (see "Members and editing" below).
@@ -67,11 +68,14 @@ Members sign in at `login.html` with an email link. There are two roles:
 - **Editors** can change website text and photos without touching code.
 - **Experts** can verify or reject map reports.
 
-**Adding a member** (an admin does this once per person):
-1. Have the person open the Members page and request a sign-in link. This creates their account.
-2. In Supabase: **Authentication > Users**, copy their user ID (a long code).
-3. **Table Editor**: open the `editors` table (or `experts`), click **Insert row**, paste the ID, **Save**.
-4. They reload the Members page and see their buttons.
+**Adding a member** (an admin does this, about 30 seconds per person):
+1. In Supabase open **Table Editor > `member_emails`** and click **Insert row**.
+2. Type the person's **email** and pick a **role** (`editor` or `expert`). Save. Use two rows if someone needs both roles.
+3. Tell them to sign in at the Members page with that same email. They get the role as soon as they sign in. No user ID copying needed.
+
+Emails can be typed in any capitalization. The sign-in link proves the person owns the address, so only that email can use the role.
+
+**Removing a member:** delete their row from `member_emails`. They lose the role the next time the page checks (immediately on their next page load).
 
 **Editing the site:** sign in, open any page, and press **Edit page** in the bar at the bottom. Click any dashed text to type; click a photo box to upload a photo; press **Save changes**. Changes go live for everyone right away, with no GitHub push.
 
@@ -80,7 +84,7 @@ Members sign in at `login.html` with an email link. There are two roles:
 - Text is plain text only (no bold or links). Ask a developer if you need more.
 - Every save is also kept in the `site_content_history` table, so an old version can be recovered.
 - The text inside the HTML files is just the starting default. Saved edits override it.
-- Removing a member: delete their row from `editors` or `experts`.
+
 
 Supabase's free email sender is limited to a few sign-in emails per hour. If your team needs more, set up a custom SMTP sender under **Authentication > SMTP Settings**.
 

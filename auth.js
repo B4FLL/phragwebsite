@@ -16,11 +16,21 @@
     const { data } = await sb.auth.getSession();
     const user = data.session && data.session.user;
     if (!user) return null;
-    const [editor, expert] = await Promise.all([
-      sb.from("editors").select("user_id").eq("user_id", user.id).maybeSingle(),
-      sb.from("experts").select("user_id").eq("user_id", user.id).maybeSingle(),
+    const [isEditor, isExpert] = await Promise.all([
+      hasRole("is_editor", "editors", user.id),
+      hasRole("is_expert", "experts", user.id),
     ]);
-    return { email: user.email, isEditor: !!editor.data, isExpert: !!expert.data };
+    return { email: user.email, isEditor, isExpert };
+  }
+
+  // Roles come from the approved-email list or the older user-ID tables, both checked by
+  // the database function. If supabase/members.sql hasn't been run yet the function won't
+  // exist, so fall back to the user-ID table.
+  async function hasRole(fn, table, userId) {
+    const { data, error } = await sb.rpc(fn);
+    if (!error) return data === true;
+    const row = await sb.from(table).select("user_id").eq("user_id", userId).maybeSingle();
+    return !!row.data;
   }
 
   window.phrag = { cfg, demo, sb, getMember };

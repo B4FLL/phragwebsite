@@ -1,8 +1,8 @@
-// Paste your Supabase project values here (Project Settings > API).
-// The anon key is designed to be public; security comes from the row-level
-// security rules in supabase/schema.sql. Leave both empty to run in demo mode
-// (reports are saved only in your own browser).
+// Supabase project connection. Both values are meant to be public: security comes from the
+// row-level security rules in supabase/schema.sql and supabase/cms.sql, not from hiding these.
+// NEVER put the "secret" or "service_role" key here.
+// Leave both empty to run in demo mode (reports and edits are saved only in your own browser).
 window.PHRAG_CONFIG = {
-  supabaseUrl: "",
-  supabaseKey: ""
+  supabaseUrl: "https://wqtborgrbtmexudnqlfg.supabase.co",
+  supabaseKey: "sb_publishable_l4OExOf751hYvtZNXwkPng_GeWcmWPy"
 };

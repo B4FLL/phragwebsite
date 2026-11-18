@@ -275,6 +275,13 @@
     try {
       const member = await getMember();
       if (member && member.isEditor) { bar.hidden = false; setBar(); }
+      else if (member && member.roleError) {
+        // Signed in, but the access check itself failed. Say so rather than hiding editing silently.
+        bar.hidden = false;
+        editBtn.hidden = saveBtn.hidden = cancelBtn.hidden = true;
+        status.textContent = "Couldn't check your editor access.";
+        bar.insertBefore(mk("Try again", "cms-primary", () => location.reload()), members);
+      }
     } catch (e) { console.error(e); }
   })();
 })();

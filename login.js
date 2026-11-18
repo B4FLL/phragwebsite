@@ -11,7 +11,8 @@ async function render() {
   $("who").textContent = member.email;
   $("edit-link").hidden = !member.isEditor;
   $("review-link").hidden = !member.isExpert;
-  $("no-role").hidden = member.isEditor || member.isExpert;
+  $("role-error").hidden = !member.roleError;
+  $("no-role").hidden = member.isEditor || member.isExpert || member.roleError;
 }
 
 // The sign-in email links back to whatever address this page is on. From a local preview
@@ -49,5 +50,9 @@ $("logout-btn").addEventListener("click", async () => {
   render();
 });
 
-if (sb) sb.auth.onAuthStateChange(() => render());
+// Only react to real sign-in/sign-out. The callback must not wait on other Supabase calls
+// (Supabase's docs warn that can freeze its auth lock), so it just schedules a redraw.
+if (sb) sb.auth.onAuthStateChange((event) => {
+  if (event === "SIGNED_IN" || event === "SIGNED_OUT") setTimeout(render, 0);
+});
 render();

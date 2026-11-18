@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neighborhood Photos</title>
+  <meta name="description" content="Photos of Phragmites shared by neighbors across Utah, with comments from experts.">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="community.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">Phragmites Project</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav">
+        <a href="index.html#problem">The Problem</a>
+        <a href="map.html">Map</a>
+        <a href="community.html" aria-current="page">Neighborhood</a>
+        <a href="identify.html">Identify</a>
+        <a href="login.html">Members</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="container feed-wrap">
+        <h2>Neighborhood photos</h2>
+        <p>See Phragmites that neighbors have spotted, and share your own. Experts comment with a
+          <span class="badge-expert">✓ Expert</span> tag so you can tell their advice apart.</p>
+
+        <div class="notice">
+          <strong>Before you post:</strong> only photograph plants from public land or your own
+          property. Please keep people's faces, house numbers and license plates out of the photo.
+          Don't cut or pull Phragmites yourself. Photos and comments can be hidden by moderators.
+        </div>
+
+        <p id="demo-note" class="notice" hidden>
+          Demo mode: the database isn't connected, so posts here are saved only in this browser.
+        </p>
+
+        <div class="toolbar">
+          <button id="share-btn" class="button" type="button" hidden>Share a photo</button>
+          <a id="signin-link" class="button" href="login.html" hidden>Sign in to share or comment</a>
+          <button id="near-btn" class="chip" type="button">Near me</button>
+          <button id="new-btn" class="chip active" type="button">Newest</button>
+          <span id="feed-status" class="muted-line" role="status"></span>
+        </div>
+
+        <form id="post-form" class="composer" hidden>
+          <h3>Share a photo</h3>
+          <label>Photo
+            <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required>
+          </label>
+          <img id="preview" class="preview" alt="Preview of your photo" hidden>
+
+          <p id="loc-info" class="small">Choose a photo and we'll use its location if it has one. You can also click the map.</p>
+          <div id="pick-map" class="pick-map" aria-label="Map for choosing where the photo was taken"></div>
+          <button id="gps-btn" type="button" class="link-btn">Use my current location</button>
+
+          <label>Date taken
+            <input type="date" name="taken_on" required>
+          </label>
+          <label>What do you think it is?
+            <select name="id_guess">
+              <option value="unsure">Not sure</option>
+              <option value="invasive">Invasive Phragmites</option>
+              <option value="native">Native Phragmites</option>
+            </select>
+          </label>
+          <label>Caption (optional)
+            <textarea name="caption" rows="3" maxlength="500"></textarea>
+          </label>
+          <label>Name shown with your post
+            <input type="text" name="author_name" maxlength="60" required autocomplete="nickname">
+          </label>
+          <label class="check">
+            <input type="checkbox" name="precise">
+            Show my exact location publicly (only if this is public land or your own property)
+          </label>
+          <p class="small">Otherwise your location is shown rounded to about 1 km. Experts always see the exact spot.</p>
+          <button class="button" type="submit">Post photo</button>
+          <button class="link-btn" type="button" id="cancel-post">Cancel</button>
+          <p id="post-msg" class="small" role="status"></p>
+        </form>
+
+        <div id="feed" class="feed" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><p>&copy; <span id="year"></span> Phragmites Project · FIRST LEGO League</p></div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="script.js"></script>
+  <script src="community.js"></script>
+</body>
+</html>

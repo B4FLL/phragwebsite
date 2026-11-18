@@ -38,6 +38,7 @@
 .dot.native { background: #2a6fb0; }
 .dot.unspecified { background: #8a8a80; }
 .dot.unsure { background: #d89a1b; }
+.dot.photo { background: #6b3fa0; }
 
 .queue-item { border: 1px solid #ddd8c8; border-radius: 8px; padding: 10px; margin: 8px 0; font-size: 0.88rem; }
 .queue-item p { margin: 2px 0; }

@@ -11,6 +11,8 @@ Website and Utah tracking map for our FIRST LEGO League innovation project on in
 - `auth.js` – shared sign-in code; `cms.js` – lets members edit text and photos on the page
 - `supabase/cms.sql` – tables and rules for editable content and photos
 - `supabase/members.sql` – approved-email list for editors and experts
+- `community.html`, `community.js`, `community.css` – Neighborhood photo feed with comments and expert tags
+- `supabase/community.sql` – tables, privacy rules and photo storage for the Neighborhood feed
 - `data/inat-utah.json` – Utah observations pulled directly from iNaturalist (newest data)
 - `data/gbif-utah.json` – museum/herbarium and other records from GBIF (iNaturalist records are excluded here to avoid duplicates)
 - `scripts/fetch-inat.ps1`, `scripts/fetch-gbif.ps1` – re-download those two files (see "Refreshing the data")
@@ -38,7 +40,7 @@ In PowerShell, any static server works; VS Code's "Live Server" extension is the
 GitHub Pages only serves static files, so community reports are stored in Supabase (free tier).
 
 1. Make a project at supabase.com.
-2. **SQL Editor**: paste and run `supabase/schema.sql`, then run `supabase/cms.sql` as a second query, then `supabase/members.sql` as a third.
+2. **SQL Editor**: paste and run `supabase/schema.sql`, then run `supabase/cms.sql` as a second query, then `supabase/members.sql` as a third, then `supabase/community.sql` as a fourth.
 3. **Project Settings > API**: copy the Project URL and the `anon` public key into `config.js`.
 4. **Authentication > URL Configuration**: set Site URL to your GitHub Pages address.
 5. Add members (see "Members and editing" below).
@@ -51,6 +53,18 @@ Until step 3 is done the map runs in **demo mode** (reports stay in your own bro
 - GBIF records are colored by subspecies: invasive (*australis*), native (*americanus*), or unspecified (most records).
 - Community reports start as **unverified**; experts mark them **verified** or **rejected**.
 - Public coordinates for community reports are rounded to ~1 km (the exact point is visible only to experts).
+
+## Neighborhood photos
+
+`community.html` is a photo feed, like a neighborhood app: people share photos of Phragmites near them, with a location, and others comment.
+
+- **Anyone can look; posting and commenting need an email sign-in** (the same link sign-in as members). This keeps spam out and makes the expert tag trustworthy.
+- **Location:** read from the photo's GPS data when it has one (phone photos usually do), then adjustable on a small map. Locations must be inside Utah.
+- **Privacy:** the saved copy of each photo is re-drawn without hidden data. Locations are shown rounded to about 1 km unless the poster ticks "show my exact location". Experts and moderators always see the exact spot. Only the poster chooses to make it exact.
+- **Expert tag:** a green **✓ Expert** tag appears on posts and comments from anyone on the `expert` list in `member_emails`. It's looked up live, so removing someone from the list removes their tag. A commenter's typed name can say anything, so trust the tag, not the name.
+- **Moderation:** experts and editors see a **Hide** button on other people's posts and comments (hidden items disappear from the public feed but stay in the database; un-hide by changing `status` back to `visible` in Table Editor). Authors can delete their own.
+- **Limits:** 10 posts and 30 comments per person per hour. Photos are shrunk before upload and capped at 5 MB.
+- **On the map:** neighbor photos also appear as purple pins on the map page.
 
 ## Refreshing the data
 

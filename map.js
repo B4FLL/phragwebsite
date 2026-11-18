@@ -1,7 +1,7 @@
 // Utah Phragmites map: GBIF records + community reports + expert verification.
 // With no Supabase keys in config.js this runs in demo mode (reports stay in this browser).
 
-const { demo, sb, getMember } = window.phrag; // shared sign-in client from auth.js
+const { cfg, demo, sb, getMember } = window.phrag; // shared sign-in client from auth.js
 
 const COLORS = { invasive: "#c0392b", native: "#2a6fb0", unspecified: "#8a8a80", unsure: "#d89a1b" };
 const LABELS = { invasive: "Invasive Phragmites", native: "Native Phragmites", unsure: "Not sure", unspecified: "Not identified to subspecies" };
@@ -86,6 +86,16 @@ const OLD_YEARS = 5;
 const cutoff = new Date(new Date().setFullYear(new Date().getFullYear() - OLD_YEARS)).toISOString().slice(0, 10);
 const isOld = (date) => !!date && date < cutoff; // ISO strings compare correctly, even a bare "2009"
 
+// Opened from a Neighborhood post ("View on map"): map.html?lat=..&lng=..&zoom=..
+const linked = new URLSearchParams(location.search);
+if (linked.has("lat") && linked.has("lng")) {
+  const lat = Number(linked.get("lat")), lng = Number(linked.get("lng"));
+  if (Number.isFinite(lat) && Number.isFinite(lng)) map.setView([lat, lng], Math.min(18, Number(linked.get("zoom")) || 13));
+}
+
+// Neighbor photos from the Neighborhood page, drawn as purple pins.
+const photoLayer = L.layerGroup().addTo(map);
+
 // Every marker is kept here so the filters can show/hide them without refetching.
 const shown = L.layerGroup().addTo(map);
 let markers = [];
@@ -167,6 +177,48 @@ function addReport(r) {
   markers.push({ m, cat, old: false });
 }
 
+const PHOTO_PATH = /^[0-9a-f-]{36}\/[A-Za-z0-9._-]{1,80}$/;
+
+async function listPhotoPosts() {
+  if (demo) {
+    return JSON.parse(localStorage.getItem("phragPosts") || "[]")
+      .filter((p) => p.status === "visible")
+      .map((p) => ({
+        ...p, imageUrl: p.image_url,
+        lat: p.precise ? p.lat : Math.round(p.lat * 100) / 100,
+        lng: p.precise ? p.lng : Math.round(p.lng * 100) / 100,
+      }));
+  }
+  const { data, error } = await sb.from("public_posts")
+    .select("id,lat,lng,author_name,caption,image_path,author_is_expert,taken_on");
+  if (error) throw error;
+  return data.filter((p) => PHOTO_PATH.test(p.image_path))
+    .map((p) => ({ ...p, imageUrl: `${cfg.supabaseUrl}/storage/v1/object/public/community-photos/${p.image_path}` }));
+}
+
+async function addPhotoPins() {
+  photoLayer.clearLayers();
+  const photos = await listPhotoPosts();
+  for (const p of photos) {
+    const m = L.circleMarker([p.lat, p.lng], { radius: 8, color: "#fff", weight: 2, fillColor: "#6b3fa0", fillOpacity: 0.95 });
+    const el = document.createElement("div");
+    el.className = "popup";
+    const img = document.createElement("img");
+    img.src = p.imageUrl; img.alt = p.caption || "Neighbor photo of Phragmites"; img.style.maxWidth = "200px"; img.style.borderRadius = "6px";
+    const h = document.createElement("h4");
+    h.textContent = "Neighbor photo";
+    el.append(h, img);
+    if (p.caption) row(el, "Caption", p.caption);
+    row(el, "Posted by", p.author_name + (p.author_is_expert ? " (expert)" : ""));
+    const a = document.createElement("a");
+    a.href = "community.html#post-" + p.id; a.textContent = "See photo and comments";
+    el.append(a);
+    m.bindPopup(el);
+    m.addTo(photoLayer);
+  }
+  return photos.length;
+}
+
 const SOURCES = [
   { file: "data/inat-utah.json", name: "iNaturalist" },
   { file: "data/gbif-utah.json", name: "GBIF" },
@@ -195,14 +247,18 @@ async function load() {
     console.error(e);
     notes.push("community reports failed to load");
   }
+  let photoCount = 0;
+  try { photoCount = await addPhotoPins(); } catch (e) { console.error(e); }
   applyFilters();
   const oldCount = markers.filter((x) => x.old).length;
   $("stats").textContent =
-    `${publicCount.toLocaleString()} public records from ${notes.join(", ")} + ${reportCount} community report${reportCount === 1 ? "" : "s"}. ` +
-    `${oldCount.toLocaleString()} are older than ${OLD_YEARS} years.`;
+    `${publicCount.toLocaleString()} public records from ${notes.join(", ")} + ${reportCount} community report${reportCount === 1 ? "" : "s"}` +
+    (photoCount ? ` + ${photoCount} neighbor photo${photoCount === 1 ? "" : "s"}` : "") +
+    `. ${oldCount.toLocaleString()} records are older than ${OLD_YEARS} years.`;
 }
 
 document.querySelectorAll("[data-layer], #show-old").forEach((box) => box.addEventListener("change", applyFilters));
+$("show-photos").addEventListener("change", (e) => (e.target.checked ? photoLayer.addTo(map) : map.removeLayer(photoLayer)));
 
 if (demo) {
   const b = $("mode-banner");

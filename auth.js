@@ -6,11 +6,12 @@
   const demo = !cfg.supabaseUrl || !cfg.supabaseKey;
   const sb = demo ? null : window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
 
-  // Returns null when signed out, else { email, isEditor, isExpert }.
+  // Returns null when signed out, else { id, email, isEditor, isExpert }.
+  // Anyone signed in is returned; the two flags say whether they also have a member role.
   async function getMember() {
     if (demo) {
       return localStorage.getItem("phragDemoMember") === "1"
-        ? { email: "Demo member", isEditor: true, isExpert: true }
+        ? { id: "demo-user", email: "Demo member", isEditor: true, isExpert: true }
         : null;
     }
     const { data } = await sb.auth.getSession();
@@ -20,7 +21,7 @@
       hasRole("is_editor", "editors", user.id),
       hasRole("is_expert", "experts", user.id),
     ]);
-    return { email: user.email, isEditor, isExpert };
+    return { id: user.id, email: user.email, isEditor, isExpert };
   }
 
   // Roles come from the approved-email list or the older user-ID tables, both checked by

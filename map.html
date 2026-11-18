@@ -97,13 +97,27 @@
       </section>
     </aside>
 
-    <div id="map" aria-label="Map of Phragmites sightings in Utah"></div>
+    <div class="map-wrap" id="map-wrap">
+      <div id="map" aria-label="Map of Phragmites sightings in Utah"></div>
+
+      <form id="map-search" class="map-search" role="search">
+        <div class="search-row">
+          <input id="search-input" type="search" placeholder="Search an address or place in Utah"
+                 aria-label="Search an address or place in Utah" autocomplete="off" enterkeyhint="search">
+          <button type="submit" aria-label="Search">Search</button>
+        </div>
+        <ul id="search-results" class="search-results" hidden></ul>
+      </form>
+
+      <p id="map-hint" class="map-hint" hidden>Drag to move · two fingers to zoom and twist to rotate</p>
+    </div>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="config.js"></script>
+  <script src="geocode.js"></script>
   <script src="auth.js"></script>
   <script src="script.js"></script>
   <script src="map.js"></script>

@@ -152,9 +152,17 @@ function renderFeed() {
   if (mode === "near" && userPos) {
     list.forEach((p) => (p.km = km(userPos, p)));
     list.sort((a, b) => a.km - b.km);
+    const radius = Number($("radius").value); // 0 means all of Utah
+    if (radius) list = list.filter((p) => p.km <= radius);
+    $("feed-status").textContent = radius
+      ? `${list.length} photo${list.length === 1 ? "" : "s"} within ${radius} km of you`
+      : `${list.length} photo${list.length === 1 ? "" : "s"}, nearest first`;
   }
   if (!list.length) {
-    feed.append(h("p", { className: "empty" }, "No photos yet. Be the first to share one!"));
+    const nearby = mode === "near" && userPos;
+    feed.append(h("p", { className: "empty" }, nearby
+      ? "No photos near you yet. Try a wider distance, or be the first to share one!"
+      : "No photos yet. Be the first to share one!"));
     return;
   }
   list.forEach((p) => feed.append(renderPost(p)));
@@ -273,8 +281,11 @@ async function reload() {
 $("new-btn").addEventListener("click", () => {
   mode = "new";
   $("new-btn").classList.add("active"); $("near-btn").classList.remove("active");
+  $("radius").hidden = true;
+  $("feed-status").textContent = `${posts.length} photo${posts.length === 1 ? "" : "s"}`;
   renderFeed();
 });
+$("radius").addEventListener("change", renderFeed);
 $("near-btn").addEventListener("click", () => {
   if (!navigator.geolocation) { $("feed-status").textContent = "Your browser can't share location."; return; }
   navigator.geolocation.getCurrentPosition(
@@ -282,6 +293,7 @@ $("near-btn").addEventListener("click", () => {
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       mode = "near";
       $("near-btn").classList.add("active"); $("new-btn").classList.remove("active");
+      $("radius").hidden = false;
       renderFeed();
     },
     () => { $("feed-status").textContent = "Couldn't get your location."; }
@@ -317,6 +329,7 @@ function closeComposer() {
   form.hidden = true;
   $("preview").hidden = true;
   $("post-msg").textContent = "";
+  addrResults.hidden = true;
   if (pin && pickMap) { pickMap.removeLayer(pin); pin = null; }
   $("loc-info").textContent = "Choose a photo and we'll use its location if it has one. You can also click the map.";
 }
@@ -331,6 +344,42 @@ $("share-btn").addEventListener("click", () => {
   form.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 $("cancel-post").addEventListener("click", closeComposer);
+
+// Search an address instead of clicking the map.
+const addrResults = $("addr-results");
+async function findAddress() {
+  const q = $("addr-input").value.trim();
+  if (q.length < 3) return;
+  const btn = $("addr-btn");
+  btn.disabled = true;
+  addrResults.hidden = false;
+  addrResults.textContent = "";
+  const note = (text) => addrResults.append(h("li", {}, h("div", { className: "note" }, text)));
+  const pick = (r) => {
+    addrResults.hidden = true;
+    if (setPin(r.lat, r.lng, "Using the address you searched.")) pickMap.setView([r.lat, r.lng], 16);
+  };
+  note("Searching…");
+  try {
+    const found = await window.phragGeocode.search(q);
+    addrResults.textContent = "";
+    if (!found.length) { note("No matches in Utah. Try adding the city."); return; }
+    if (found.length === 1) { pick(found[0]); return; }
+    for (const r of found) {
+      const b = h("button", { type: "button" }, r.name);
+      b.addEventListener("click", () => pick(r));
+      addrResults.append(h("li", {}, b));
+    }
+  } catch (e) {
+    console.error(e);
+    addrResults.textContent = "";
+    note("Search isn't working right now. Click the map instead.");
+  } finally {
+    btn.disabled = false;
+  }
+}
+$("addr-btn").addEventListener("click", findAddress);
+$("addr-input").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); findAddress(); } });
 
 // Photos carry their GPS position and date. We read them here, then the saved copy is
 // re-drawn without that hidden data.

@@ -46,6 +46,12 @@
           <a id="signin-link" class="button" href="login.html" hidden>Sign in to share or comment</a>
           <button id="near-btn" class="chip" type="button">Near me</button>
           <button id="new-btn" class="chip active" type="button">Newest</button>
+          <select id="radius" class="chip" aria-label="Only show photos within this distance" hidden>
+            <option value="5">Within 5 km</option>
+            <option value="25" selected>Within 25 km</option>
+            <option value="100">Within 100 km</option>
+            <option value="0">All of Utah (nearest first)</option>
+          </select>
           <span id="feed-status" class="muted-line" role="status"></span>
         </div>
 
@@ -57,6 +63,11 @@
           <img id="preview" class="preview" alt="Preview of your photo" hidden>
 
           <p id="loc-info" class="small">Choose a photo and we'll use its location if it has one. You can also click the map.</p>
+          <div class="addr-row">
+            <input id="addr-input" type="search" placeholder="Or search an address or place in Utah" aria-label="Search an address or place in Utah" autocomplete="off" enterkeyhint="search">
+            <button id="addr-btn" class="chip" type="button">Find</button>
+          </div>
+          <ul id="addr-results" class="addr-results" hidden></ul>
           <div id="pick-map" class="pick-map" aria-label="Map for choosing where the photo was taken"></div>
           <button id="gps-btn" type="button" class="link-btn">Use my current location</button>
 
@@ -99,6 +110,7 @@
   <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="config.js"></script>
+  <script src="geocode.js"></script>
   <script src="auth.js"></script>
   <script src="script.js"></script>
   <script src="community.js"></script>

@@ -60,25 +60,137 @@ const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/servi
 });
 L.control.layers({ Street: street, Satellite: satellite }, null, { position: "topright" }).addTo(map);
 
-// Rotate buttons: 45 degrees left/right, and a compass that resets to north.
-const RotateControl = L.Control.extend({
-  options: { position: "topleft" },
-  onAdd() {
-    const bar = L.DomUtil.create("div", "leaflet-bar rotate-bar");
-    const add = (text, title, fn) => {
-      const a = L.DomUtil.create("a", "", bar);
-      a.href = "#"; a.title = title; a.textContent = text;
-      a.setAttribute("role", "button"); a.setAttribute("aria-label", title);
-      L.DomEvent.on(a, "click", (e) => { L.DomEvent.stop(e); fn(); });
-    };
-    add("↺", "Rotate left", () => map.setBearing(((map.getBearing() - 45) % 360 + 360) % 360));
-    add("↻", "Rotate right", () => map.setBearing((map.getBearing() + 45) % 360));
-    add("N", "Reset to north", () => map.setBearing(0));
-    L.DomEvent.disableClickPropagation(bar);
-    return bar;
-  },
+// A stack of map buttons. Each item: [label, title, onClick] and returns the <a> it made.
+function addButtons(position, className, items) {
+  const C = L.Control.extend({
+    options: { position },
+    onAdd() {
+      const bar = L.DomUtil.create("div", "leaflet-bar " + className);
+      for (const [label, title, fn, id] of items) {
+        const a = L.DomUtil.create("a", "", bar);
+        a.href = "#"; a.title = title;
+        a.setAttribute("role", "button"); a.setAttribute("aria-label", title);
+        if (id) a.id = id;
+        if (label.nodeType) a.append(label); else a.textContent = label;
+        L.DomEvent.on(a, "click", (e) => { L.DomEvent.stop(e); fn(a); });
+      }
+      L.DomEvent.disableClickPropagation(bar);
+      return bar;
+    },
+  });
+  new C().addTo(map);
+}
+
+// Rotation: two-finger twist on phones, Shift+drag on a computer (both built in), plus buttons.
+// The compass needle turns as the map turns, so it always points to north; tap it to reset.
+const needle = document.createElement("span");
+needle.className = "compass-needle";
+needle.textContent = "▲";
+addButtons("topleft", "rotate-bar", [
+  ["↺", "Rotate left", () => map.setBearing(((map.getBearing() - 45) % 360 + 360) % 360)],
+  ["↻", "Rotate right", () => map.setBearing((map.getBearing() + 45) % 360)],
+  [needle, "Compass: tap to point north up", () => map.setBearing(0), "compass-btn"],
+]);
+map.on("rotate", () => { needle.style.transform = `rotate(${-map.getBearing()}deg)`; });
+
+// Short message over the map (used for the touch tip and location errors).
+let hintTimer = null;
+function showHint(text, ms = 5000) {
+  const el = $("map-hint");
+  el.textContent = text;
+  el.hidden = false;
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => (el.hidden = true), ms);
+}
+try {
+  if (window.matchMedia("(pointer: coarse)").matches && !sessionStorage.getItem("phragMapHint")) {
+    sessionStorage.setItem("phragMapHint", "1");
+    showHint("Drag to move · two fingers to zoom and twist to rotate", 7000);
+  }
+} catch (e) { /* storage blocked: skip the tip */ }
+
+// My location and full screen.
+let youMarker = null, youAccuracy = null;
+function locateMe() {
+  if (!navigator.geolocation) { showHint("Your browser can't share location."); return; }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const ll = [pos.coords.latitude, pos.coords.longitude];
+      [youMarker, youAccuracy].forEach((l) => l && map.removeLayer(l));
+      youAccuracy = L.circle(ll, { radius: pos.coords.accuracy, weight: 1, color: "#2a6fb0", fillOpacity: 0.12 }).addTo(map);
+      youMarker = L.circleMarker(ll, { radius: 8, weight: 3, color: "#fff", fillColor: "#2a6fb0", fillOpacity: 1, className: "you-are-here" })
+        .bindPopup("You are here").addTo(map);
+      map.setView(ll, Math.max(map.getZoom(), 14));
+    },
+    () => showHint("Couldn't get your location. Check that location is allowed for this site.")
+  );
+}
+
+const wrap = $("map-wrap");
+function setFullscreen(on) {
+  wrap.classList.toggle("full", on);
+  document.body.style.overflow = on ? "hidden" : "";
+  const btn = $("full-btn");
+  btn.textContent = on ? "✕" : "⛶";
+  btn.title = on ? "Exit full screen" : "Full screen map";
+  btn.setAttribute("aria-label", btn.title);
+  setTimeout(() => map.invalidateSize(), 50);
+}
+addButtons("topleft", "map-btn", [
+  ["◎", "Show my location", locateMe],
+  ["⛶", "Full screen map", () => setFullscreen(!wrap.classList.contains("full")), "full-btn"],
+]);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && wrap.classList.contains("full")) setFullscreen(false); });
+
+// ---------- Address search ----------
+const searchForm = $("map-search"), searchInput = $("search-input"), results = $("search-results");
+let searchPin = null, searching = false;
+
+function resultRow(content, isNote) {
+  const li = document.createElement("li");
+  if (isNote) { const n = document.createElement("div"); n.className = "note"; n.textContent = content; li.append(n); }
+  else li.append(content);
+  return li;
+}
+
+function goTo(r) {
+  results.hidden = true;
+  if (searchPin) map.removeLayer(searchPin);
+  searchPin = L.marker([r.lat, r.lng]).addTo(map).bindPopup(r.name).openPopup();
+  if (r.bounds) map.fitBounds(r.bounds, { maxZoom: 17, padding: [30, 30] });
+  else map.setView([r.lat, r.lng], 15);
+}
+
+searchForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (searching) return;
+  const q = searchInput.value.trim();
+  if (q.length < 3) return;
+  searching = true;
+  results.hidden = false;
+  results.textContent = "";
+  results.append(resultRow("Searching…", true));
+  try {
+    const found = await window.phragGeocode.search(q);
+    results.textContent = "";
+    if (!found.length) { results.append(resultRow("No matches in Utah. Try adding the city, like “123 Main St, Provo”.", true)); return; }
+    if (found.length === 1) { goTo(found[0]); return; }
+    for (const r of found) {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = r.name;
+      b.addEventListener("click", () => goTo(r));
+      results.append(resultRow(b));
+    }
+  } catch (err) {
+    console.error(err);
+    results.textContent = "";
+    results.append(resultRow("Search isn't working right now. Please try again in a moment.", true));
+  } finally {
+    searching = false;
+  }
 });
-new RotateControl().addTo(map);
+searchInput.addEventListener("keydown", (e) => { if (e.key === "Escape") results.hidden = true; });
+map.on("click", () => { results.hidden = true; });
 
 // Records older than this many years are faded and can be hidden: a patch seen long ago
 // may have grown, moved, or been treated.

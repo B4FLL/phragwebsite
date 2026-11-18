@@ -31,7 +31,30 @@
 .link-btn { background: none; border: 0; color: var(--green); text-decoration: underline; cursor: pointer; font: inherit; font-size: 0.9rem; padding: 6px 4px; }
 .banner { background: #fff3cd; border: 1px solid #e6cf7a; border-radius: 6px; padding: 8px 10px; font-size: 0.85rem; margin: 0 0 12px; }
 
+.map-wrap { position: relative; height: 100%; min-height: 0; }
 #map { height: 100%; width: 100%; }
+
+/* Full-screen map (button on the map; Esc also closes it) */
+.map-wrap.full { position: fixed; inset: 0; z-index: 3000; height: 100%; }
+
+/* Address search floats over the map, clear of the zoom/rotate buttons (left) and layers (right) */
+.map-search { position: absolute; top: 10px; left: 56px; right: 56px; z-index: 1100; max-width: 440px; }
+.search-row { display: flex; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35); border-radius: 8px; overflow: hidden; background: #fff; }
+.search-row input { flex: 1; min-width: 0; padding: 11px 12px; border: 0; font: inherit; font-size: 16px; /* 16px stops iPhone zoom-on-focus */ }
+.search-row button { padding: 0 14px; border: 0; background: var(--green-dark); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+.search-results { list-style: none; margin: 6px 0 0; padding: 0; background: #fff; border-radius: 8px; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35); max-height: 45vh; overflow-y: auto; }
+.search-results li { border-bottom: 1px solid #eee; }
+.search-results li:last-child { border-bottom: 0; }
+.search-results button, .search-results .note { display: block; width: 100%; text-align: left; padding: 11px 12px; border: 0; background: none; font: inherit; font-size: 0.9rem; cursor: pointer; }
+.search-results .note { cursor: default; color: var(--muted); }
+.search-results button:hover, .search-results button:focus { background: var(--bg-alt); }
+
+.map-hint { position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 1100; margin: 0; padding: 8px 14px; border-radius: 999px; background: rgba(31, 61, 43, 0.92); color: #fff; font-size: 0.85rem; white-space: nowrap; pointer-events: none; }
+
+/* Map buttons: compass needle, my-location, full screen */
+.map-btn a { font-size: 18px; font-weight: 700; text-decoration: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.compass-needle { display: inline-block; transition: transform 0.15s linear; font-size: 15px; line-height: 1; }
+.you-are-here { stroke: #fff; }
 
 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: none; }
 .dot.invasive { background: #c0392b; }
@@ -54,8 +77,18 @@
 .popup h4 { margin: 0 0 4px; }
 .popup p { margin: 2px 0; }
 
+/* Bigger touch targets on phones and tablets */
+@media (pointer: coarse) {
+  .leaflet-touch .leaflet-bar a { width: 40px; height: 40px; line-height: 40px; }
+  .rotate-bar a, .map-btn a { font-size: 20px; }
+  .leaflet-touch .leaflet-control-layers-toggle { width: 44px; height: 44px; }
+}
+
 @media (max-width: 760px) {
-  .map-layout { grid-template-columns: 1fr; grid-template-rows: 55vh auto; height: auto; }
-  #map { order: -1; height: 55vh; }
+  .map-layout { grid-template-columns: 1fr; grid-template-rows: auto auto; height: auto; }
+  /* Tall map so there's room to move around; the filters and report form are below it. */
+  .map-wrap { order: -1; height: 70vh; height: 70dvh; }
+  .map-wrap.full { height: 100%; }
+  .map-search { left: 62px; right: 62px; }
   .panel { border-right: 0; overflow: visible; }
 }

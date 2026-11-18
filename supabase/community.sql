@@ -42,16 +42,9 @@ $$;
 revoke execute on function public.is_moderator() from public, anon;
 grant execute on function public.is_moderator() to authenticated;
 
--- Is this user an expert? Used only inside the public views below (never callable from the
--- website), so the badge always reflects the current approved-email list.
-create or replace function public.user_is_expert(uid uuid) returns boolean
-language sql stable security definer set search_path = public as $$
-  select exists (select 1 from public.experts where user_id = uid)
-      or exists (select 1 from public.member_emails m
-                 join auth.users u on lower(u.email) = m.email
-                 where u.id = uid and m.role = 'expert');
-$$;
-revoke execute on function public.user_is_expert(uuid) from public, anon, authenticated;
+-- (The expert tag is worked out directly inside the two public views below. A helper function
+-- would be refused for website visitors, because Postgres checks permission to run functions
+-- inside a view against the visitor, not the view's owner.)
 
 -- ---------- Spam limits ----------
 create or replace function public.limit_posts() returns trigger
@@ -135,7 +128,10 @@ create or replace view public.public_posts as
          case when p.precise then p.lat else round(p.lat::numeric, 2)::float8 end as lat,
          case when p.precise then p.lng else round(p.lng::numeric, 2)::float8 end as lng,
          p.precise, p.taken_on, p.id_guess, p.caption, p.image_path,
-         public.user_is_expert(p.user_id) as author_is_expert,
+         (exists (select 1 from public.experts x where x.user_id = p.user_id)
+          or exists (select 1 from public.member_emails m
+                     join auth.users u on lower(u.email) = m.email
+                     where u.id = p.user_id and m.role = 'expert')) as author_is_expert,
          (select count(*) from public.comments c
             where c.post_id = p.id and c.status = 'visible')::int as comment_count,
          coalesce(p.user_id = auth.uid(), false) as is_mine
@@ -144,13 +140,20 @@ create or replace view public.public_posts as
 
 create or replace view public.public_comments as
   select c.id, c.post_id, c.created_at, c.author_name, c.body,
-         public.user_is_expert(c.user_id) as author_is_expert,
+         (exists (select 1 from public.experts x where x.user_id = c.user_id)
+          or exists (select 1 from public.member_emails m
+                     join auth.users u on lower(u.email) = m.email
+                     where u.id = c.user_id and m.role = 'expert')) as author_is_expert,
          coalesce(c.user_id = auth.uid(), false) as is_mine
   from public.comments c
   join public.posts p on p.id = c.post_id and p.status = 'visible'
   where c.status = 'visible';
 
 grant select on public.public_posts, public.public_comments to anon, authenticated;
+
+-- Clean up the helper function from the first version of this script, if it's there.
+-- (Safe now: the views above no longer use it.)
+drop function if exists public.user_is_expert(uuid);
 
 -- ---------- Photo storage ----------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

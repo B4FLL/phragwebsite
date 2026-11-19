@@ -13,6 +13,8 @@ Website and Utah tracking map for our FIRST LEGO League innovation project on in
 - `supabase/members.sql` – approved-email list for editors and experts
 - `community.html`, `community.js`, `community.css` – Neighborhood photo feed with comments and expert tags
 - `supabase/community.sql` – tables, privacy rules and photo storage for the Neighborhood feed
+- `privacy.html` – privacy notice and community rules
+- `.github/workflows/` – the two automatic jobs (data refresh, database keep-alive)
 - `data/inat-utah.json` – Utah observations pulled directly from iNaturalist (newest data)
 - `data/gbif-utah.json` – museum/herbarium and other records from GBIF (iNaturalist records are excluded here to avoid duplicates)
 - `scripts/fetch-inat.ps1`, `scripts/fetch-gbif.ps1` – re-download those two files (see "Refreshing the data")
@@ -66,6 +68,23 @@ Until step 3 is done the map runs in **demo mode** (reports stay in your own bro
 - **Limits:** 10 posts and 30 comments per person per hour. Photos are shrunk before upload and capped at 5 MB.
 - **On the map:** neighbor photos also appear as purple pins on the map page.
 
+## Reporting problem photos and comments
+
+Signed-in visitors see a **Report** button on other people's photos and comments and give a short reason (once per item). Moderators (experts and editors) see a red "⚑ Reported" line with the reasons under the item, and can press **Hide**. The button appears only after the database script in `supabase/community.sql` has been run (it includes the `flags` table), so re-run that file once after updating.
+
+## Automatic jobs (GitHub Actions)
+
+Two jobs run on GitHub's servers with nobody online. Check them under the repository's **Actions** tab. To run one now: pick it, then **Run workflow**.
+
+- **Refresh map data** (`.github/workflows/refresh-data.yml`): every Monday it re-downloads the iNaturalist and GBIF records and commits them if they changed. If the new data looks wrong (too few records) it stops and publishes nothing.
+- **Keep database awake** (`.github/workflows/keep-database-awake.yml`): twice a week it asks Supabase for one row so the free plan doesn't pause the project after a quiet week. If the project is ever paused, this job fails and GitHub emails the repository admins. Restore the project from the Supabase dashboard.
+
+GitHub switches scheduled jobs off after 60 days with no activity in the repository. The weekly data commits count as activity, so this shouldn't happen while the refresh job is working.
+
+## Privacy page
+
+`privacy.html` explains what the site collects, who else handles it, and the rules for photos and comments. Signed-in editors can fill in the team's contact email on the page itself. A coach or teacher should read it before the site is shared widely; it was written by students and hasn't been reviewed by a lawyer.
+
 ## Refreshing the data
 
 ```
@@ -73,7 +92,7 @@ powershell -ExecutionPolicy Bypass -File scripts/fetch-inat.ps1
 powershell -ExecutionPolicy Bypass -File scripts/fetch-gbif.ps1
 ```
 
-Records older than 5 years are drawn faded and can be hidden (`OLD_YEARS` in `map.js`). Re-run the scripts every few weeks so the map stays current. GBIF data is licensed per record (CC0, CC-BY, or CC-BY-NC); credit both GBIF and iNaturalist on the site and in Sources. We store only location, date, taxon, and link, never photos or usernames.
+The same two scripts also run automatically every week (see "Automatic jobs"). Records older than 5 years are drawn faded and can be hidden (`OLD_YEARS` in `map.js`). Re-run the scripts every few weeks so the map stays current. GBIF data is licensed per record (CC0, CC-BY, or CC-BY-NC); credit both GBIF and iNaturalist on the site and in Sources. We store only location, date, taxon, and link, never photos or usernames.
 
 ## Members and editing
 

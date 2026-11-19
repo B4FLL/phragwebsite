@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy and Community Rules</title>
+  <meta name="description" content="What this Phragmites project collects, who can see it, and the rules for sharing photos and comments.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!--
+    Written by the student team for a public site. It has not been reviewed by a lawyer.
+    A coach or teacher should read it before the site is shared widely. The contact line below
+    can be edited by signed-in editors from the page itself.
+  -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">Phragmites Project</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav">
+        <a href="index.html#problem">The Problem</a>
+        <a href="map.html">Map</a>
+        <a href="community.html">Neighborhood</a>
+        <a href="identify.html">Identify</a>
+        <a href="login.html">Members</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="container prose">
+        <h2>Privacy and community rules</h2>
+        <p class="muted-block">Last updated: November 2026</p>
+
+        <h3>Who runs this site</h3>
+        <p>This site is run by a student FIRST LEGO League team as a school project about invasive Phragmites in Utah.</p>
+        <p><strong>Contact:</strong> <span data-edit="privacy-contact">Add the team's contact email here (signed-in editors can change this line directly on the page).</span></p>
+
+        <h3>What we collect and why</h3>
+        <ul>
+          <li><strong>Map reports</strong> (no account needed): the date, location, patch size, notes, and an optional name. The public map shows the location rounded to about 1 km to protect private land. Approved experts see the exact spot so they can check it.</li>
+          <li><strong>Sign-in:</strong> your email address, used only to send you a sign-in link and to recognize you when you come back. It is never shown on the site.</li>
+          <li><strong>Neighborhood photos and comments:</strong> the photo, caption, date, location, and the display name you type. These are public. Photos are re-saved without the hidden data cameras embed, so the file itself carries no location. Locations are shown rounded to about 1 km unless you tick "show my exact location".</li>
+          <li><strong>Public datasets:</strong> the dots from iNaturalist and GBIF come from public records (location, date, species). We do not copy photos or usernames from them.</li>
+          <li><strong>Website editing:</strong> when team members edit the site we keep a history of changes and who made them.</li>
+          <li><strong>In your browser:</strong> your sign-in session, and the display name you last used so you don't retype it. We do not run advertising or analytics trackers.</li>
+        </ul>
+
+        <h3>Who else handles your data</h3>
+        <ul>
+          <li><strong>Supabase</strong> stores the database, photos, and sign-in emails.</li>
+          <li><strong>GitHub</strong> hosts the website files.</li>
+          <li><strong>OpenStreetMap</strong> provides the map and address search. Text you type into a search box is sent to them. <strong>Esri</strong> provides the satellite view.</li>
+          <li><strong>unpkg and jsDelivr</strong> deliver code libraries the pages use.</li>
+        </ul>
+        <p>Like any website, these services can see your internet address when your browser contacts them.</p>
+
+        <h3>Your choices</h3>
+        <ul>
+          <li>You can delete your own photos and comments with the Delete button next to them.</li>
+          <li>To have a map report, account, or anything else removed, contact us using the address above and tell us what to remove.</li>
+          <li>Use the Report button on a photo or comment if something is wrong. Moderators review reports.</li>
+        </ul>
+
+        <h3>Rules for photos and comments</h3>
+        <ul>
+          <li>Only photograph plants from <strong>public land or your own property</strong>. Never trespass to take a picture.</li>
+          <li>Keep <strong>people's faces, house numbers, and license plates</strong> out of photos. Don't post pictures of children.</li>
+          <li>Be kind and stay on topic. No harassment, advertising, or spam.</li>
+          <li>Only post photos you took yourself or have permission to share.</li>
+          <li>Do not cut, pull, spray, or dig up Phragmites yourself. Disturbing it can spread it. Report it, and contact your county weed control office.</li>
+          <li>Moderators can hide posts and comments that break these rules.</li>
+        </ul>
+
+        <h3>About the information on the map</h3>
+        <p>Sightings can be years old, may be misidentified, and are not a complete record. The invasive and native types look alike, and only an expert can be sure. A green <strong>Expert</strong> tag means the person is on our approved expert list. It does not mean we guarantee their advice. Nothing here is official guidance. For control or removal, contact your county weed control office or the Utah Department of Agriculture and Food.</p>
+
+        <h3>Children</h3>
+        <p>You must be at least 13 to create a sign-in. If you are younger, ask a parent or teacher to post for you.</p>
+
+        <h3>Changes</h3>
+        <p>If this page changes, the date at the top will change.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container"><p>&copy; <span id="year"></span> Phragmites Project · FIRST LEGO League · <a href="privacy.html">Privacy &amp; community rules</a></p></div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="script.js"></script>
+  <script src="cms.js"></script>
+</body>
+</html>

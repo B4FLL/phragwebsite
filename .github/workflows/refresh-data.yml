@@ -1,0 +1,54 @@
+# Re-downloads the iNaturalist and GBIF records every week so the map stays current.
+# Run it by hand any time: GitHub > Actions > "Refresh map data" > Run workflow.
+name: Refresh map data
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"   # Mondays, 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write         # lets the job commit the new data files
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    # Windows + Windows PowerShell, the same setup the scripts were written and tested on.
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download iNaturalist records
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fetch-inat.ps1
+
+      - name: Download GBIF records
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fetch-gbif.ps1
+
+      - name: Check the new data looks sane
+        shell: powershell
+        run: |
+          $inat = (Get-Content data/inat-utah.json -Raw | ConvertFrom-Json).records.Count
+          $gbif = (Get-Content data/gbif-utah.json -Raw | ConvertFrom-Json).records.Count
+          "iNaturalist: $inat records, GBIF: $gbif records"
+          if ($inat -lt 800 -or $gbif -lt 80) {
+            throw "Record counts look too low, so this refresh will not be published."
+          }
+
+      - name: Commit and push if the data changed
+        shell: bash
+        run: |
+          git config user.name "phragmites-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "No data changes."
+          else
+            git commit -m "Refresh iNaturalist and GBIF data ($(date -u +%F))"
+            git push
+          fi

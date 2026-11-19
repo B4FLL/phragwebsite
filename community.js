@@ -16,6 +16,8 @@ let me = null;          // signed-in person ({ id, email, isEditor, isExpert }) 
 let posts = [];
 let mode = "new";       // "new" or "near"
 let userPos = null;     // where the viewer is, for "Near me"
+let flagsReady = false; // is the "Report this" table set up?
+let flags = {};         // moderators only: item id -> list of reasons people gave
 
 // ---------- Tiny DOM helper ----------
 function h(tag, props, ...kids) {
@@ -125,7 +127,62 @@ const store = {
     if (error) throw error;
     if (imagePath && SAFE_PATH.test(imagePath)) await sb.storage.from(BUCKET).remove([imagePath]);
   },
+
+  // "Report this": is the flags table set up yet? (Lets the site be published before the database
+  // script is run: the Report button just stays hidden until the table exists.)
+  async flagsAvailable() {
+    if (demo) return true;
+    const { error } = await sb.from("flags").select("id").limit(1);
+    return !(error && (error.code === "PGRST205" || error.status === 404));
+  },
+
+  async report(kind, itemId, reason) {
+    if (demo) {
+      const all = readDemo("phragFlags");
+      if (all.some((f) => f.user_id === me.id && f.kind === kind && f.item_id === itemId)) throw { code: "23505" };
+      all.push({ user_id: me.id, kind, item_id: itemId, reason });
+      writeDemo("phragFlags", all);
+      return;
+    }
+    const { error } = await sb.from("flags").insert({ user_id: me.id, kind, item_id: itemId, reason });
+    if (error) throw error;
+  },
+
+  async listFlags() { // moderators only
+    if (demo) return readDemo("phragFlags");
+    const { data, error } = await sb.from("flags").select("kind,item_id,reason");
+    if (error) throw error;
+    return data;
+  },
 };
+
+// Moderators see how many people reported an item, and why.
+function flagNote(id) {
+  const reasons = flags[id];
+  return reasons && reasons.length
+    ? [h("p", { className: "flagged" }, `⚑ Reported ${reasons.length}×: ${reasons.join(" · ")}`)]
+    : [];
+}
+
+async function loadFlags() {
+  flags = {};
+  if (!me || !flagsReady || !(me.isExpert || me.isEditor)) return;
+  try {
+    for (const f of await store.listFlags()) (flags[f.item_id] = flags[f.item_id] || []).push(f.reason);
+  } catch (e) { console.error(e); }
+}
+
+async function reportItem(kind, id) {
+  const reason = prompt("Why are you reporting this? (for example: shows a person's face, isn't Phragmites, rude or spam)");
+  if (!reason || !reason.trim()) return;
+  try {
+    await store.report(kind, id, reason.trim().slice(0, 300));
+    alert("Thank you. A moderator will take a look.");
+  } catch (err) {
+    console.error(err);
+    alert(err && err.code === "23505" ? "You've already reported this." : friendly(err, "Couldn't send your report. Please try again."));
+  }
+}
 
 // Server rate-limit messages start with "You've"; show those, keep other errors generic.
 const friendly = (err, fallback) => (err && /^You've/.test(err.message || "") ? err.message : fallback);
@@ -185,7 +242,7 @@ function renderPost(p) {
     `Seen ${p.taken_on} · ${coordsText(p)} · `,
     h("a", { href: `map.html?lat=${p.lat}&lng=${p.lng}&zoom=${p.precise ? 16 : 13}` }, "View on map"),
     p.km != null ? ` · ${p.km < 10 ? p.km.toFixed(1) : Math.round(p.km)} km away` : "");
-  body.append(meta);
+  body.append(meta, ...flagNote(p.id));
 
   const panel = h("div", { className: "comments", hidden: true });
   const toggle = h("button", { type: "button" }, `Comments (${p.comment_count})`);
@@ -202,6 +259,7 @@ function renderPost(p) {
     if (!confirm("Delete your photo and its comments?")) return;
     await store.remove("posts", p.id, p.image_path); await reload();
   }));
+  if (me && flagsReady && !p.is_mine) actions.append(actionBtn("Report", "", () => reportItem("post", p.id)));
   body.append(actions);
   card.append(body, panel);
   return card;
@@ -227,7 +285,7 @@ async function renderComments(p, panel, toggle) {
     const who = h("p", {}, h("strong", {}, c.author_name), " ");
     if (c.author_is_expert) who.append(badge(), " ");
     who.append(h("span", { className: "meta" }, when(c.created_at)));
-    row.append(who, h("p", {}, c.body));
+    row.append(who, h("p", {}, c.body), ...flagNote(c.id));
     const acts = h("div", { className: "actions" });
     if (me && (me.isExpert || me.isEditor) && !c.is_mine) acts.append(actionBtn("Hide", "", async () => {
       await store.hide("comments", c.id); await renderComments(p, panel, toggle);
@@ -235,6 +293,7 @@ async function renderComments(p, panel, toggle) {
     if (c.is_mine) acts.append(actionBtn("Delete", "danger", async () => {
       await store.remove("comments", c.id); await renderComments(p, panel, toggle);
     }));
+    if (me && flagsReady && !c.is_mine) acts.append(actionBtn("Report", "", () => reportItem("comment", c.id)));
     if (acts.children.length) row.append(acts);
     panel.append(row);
   }
@@ -269,6 +328,7 @@ async function reload() {
   $("feed-status").textContent = "Loading…";
   try {
     posts = await store.listPosts();
+    await loadFlags();
     $("feed-status").textContent = `${posts.length} photo${posts.length === 1 ? "" : "s"}`;
   } catch (e) {
     console.error(e);
@@ -464,6 +524,7 @@ form.addEventListener("submit", async (e) => {
 (async function init() {
   $("demo-note").hidden = !demo;
   try { me = await getMember(); } catch (e) { console.error(e); }
+  if (me) { try { flagsReady = await store.flagsAvailable(); } catch (e) { console.error(e); } }
   $("share-btn").hidden = !me;
   $("signin-link").hidden = !!me;
   await reload();

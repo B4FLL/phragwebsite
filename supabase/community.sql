@@ -170,3 +170,46 @@ create policy "own or moderator delete community photos" on storage.objects
   for delete to authenticated
   using (bucket_id = 'community-photos'
          and ((storage.foldername(name))[1] = auth.uid()::text or public.is_moderator()));
+
+-- ---------- "Report this" from visitors ----------
+-- Signed-in people can flag a photo or comment. Only moderators (experts and editors) can read
+-- the flags. Each person can flag an item once.
+create table if not exists public.flags (
+  id         uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  kind       text not null check (kind in ('post', 'comment')),
+  item_id    uuid not null,
+  reason     text not null check (char_length(btrim(reason)) between 1 and 300),
+  unique (user_id, kind, item_id)
+);
+alter table public.flags enable row level security;
+
+revoke all on public.flags from anon;
+revoke update on public.flags from authenticated;
+grant select, insert, delete on public.flags to authenticated;
+
+drop policy if exists "signed-in users report" on public.flags;
+create policy "signed-in users report" on public.flags
+  for insert to authenticated with check (user_id = auth.uid());
+
+drop policy if exists "moderators read reports" on public.flags;
+create policy "moderators read reports" on public.flags
+  for select to authenticated using (public.is_moderator());
+
+drop policy if exists "moderators clear reports" on public.flags;
+create policy "moderators clear reports" on public.flags
+  for delete to authenticated using (public.is_moderator());
+
+create or replace function public.limit_flags() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if (select count(*) from public.flags
+      where user_id = new.user_id and created_at > now() - interval '1 hour') >= 20 then
+    raise exception 'You''ve sent a lot of reports in the last hour. Please wait a while.';
+  end if;
+  return new;
+end $$;
+drop trigger if exists flags_limit on public.flags;
+create trigger flags_limit before insert on public.flags
+  for each row execute function public.limit_flags();

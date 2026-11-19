@@ -246,3 +246,10 @@ body.editing { padding-bottom: 80px; }
 .editing .slot:not(.has-image)::before { content: "Click to add a photo"; }
 .editing .slot.has-image .slot-remove { display: block; }
 .slot-remove { display: none; position: absolute; top: 8px; right: 8px; padding: 6px 10px; border: 0; border-radius: 6px; background: rgba(0, 0, 0, 0.7); color: #fff; font: inherit; font-size: 0.85rem; cursor: pointer; }
+
+/* Privacy page and footer links */
+.prose { max-width: 720px; }
+.prose h3 { margin-top: 1.8em; }
+.prose li { margin-bottom: 8px; }
+.muted-block { color: var(--muted); margin-top: -0.5em; }
+.site-footer a { color: #e6efe8; }

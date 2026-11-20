@@ -13,7 +13,7 @@ The site has no automated test suite. This file records the checks that were run
 | Check | Result |
 |---|---|
 | `map.html`, tap Menu, all 8 links visible on top of the map | Pass |
-| Same page with the fix switched off (simulated) | Fail: menu hidden behind the map |
+| Same page with the fix switched off (simulated) | Bug reproduced as expected: menu hidden behind the map |
 | Zoom control, address search box and layers button on top of the map (menu closed) | Pass |
 | Fullscreen button makes the map fill the whole screen (375x667) | Pass |
 | `community.html` loads | Pass |
@@ -36,10 +36,32 @@ Fullscreen map (with the fix): the map fills the whole screen.
 
 ### Repeat it
 
+Install Playwright once in a folder outside the project, so `node_modules` doesn't end up in the repo:
+
 ```
-python3 -m http.server 8000            # in the project root
-npm install playwright                  # once, in a scratch folder, plus: npx playwright install chromium
-TARGET_URL=http://localhost:8000 OUT_DIR=/tmp node tests/mobile-menu.check.js
+mkdir ~/playwright-tools && cd ~/playwright-tools
+npm install playwright && npx playwright install chromium
 ```
 
-The script is [tests/mobile-menu.check.js](../tests/mobile-menu.check.js). It prints the results above and saves screenshots to `OUT_DIR`. Its "links on top" count for the simulated no-fix case understated the problem (6 of 8); the screenshot shows the whole menu hidden, so judge by the screenshot.
+Then, from the project root, in two terminals:
+
+```
+python3 -m http.server 8000
+NODE_PATH=~/playwright-tools/node_modules TARGET_URL=http://localhost:8000 OUT_DIR=/tmp node tests/mobile-menu.check.js
+```
+
+The script is [tests/mobile-menu.check.js](../tests/mobile-menu.check.js). It prints the results below and saves screenshots to `OUT_DIR`:
+
+```
+WITH FIX (map.html): 8/8 menu links on top
+WITHOUT FIX (simulated): 6/8 menu links on top | covered: The Problem, Our Solution
+Map controls: zoom control covered
+Fullscreen: {"full":true,"topLeftInMap":true,"rect":[0,0,375,667]}
+community.html loaded, title: Neighborhood Photos
+```
+
+Two lines in that output look wrong but aren't:
+- The no-fix count (6 of 8) understates the bug. The screenshot shows the whole menu hidden, so judge that case by the screenshot.
+- "zoom control covered" happens because the menu is still open at that step and correctly sits over the zoom control. With the menu closed, the zoom control, search box and layers button are all on top.
+
+Full evidence for this fix, with raw output and limits: [evidence/mobile-menu-fix.md](evidence/mobile-menu-fix.md).

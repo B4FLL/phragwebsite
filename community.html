@@ -55,8 +55,16 @@
           <span id="feed-status" class="muted-line" role="status"></span>
         </div>
 
+        <div class="toolbar" role="group" aria-label="Show photos by identification guess">
+          <button class="chip active" type="button" data-guess="all">All</button>
+          <button class="chip" type="button" data-guess="invasive">Looks invasive</button>
+          <button class="chip" type="button" data-guess="native">Looks native</button>
+          <button class="chip" type="button" data-guess="unsure">Not sure</button>
+        </div>
+
         <form id="post-form" class="composer" hidden>
           <h3>Share a photo</h3>
+          <p class="small rules"><strong>Before you post:</strong> photograph plants from public land or your own property only. Keep people's faces, house numbers and license plates out of the photo (no photos of children), and post only photos you took. Not sure what the plant is? Check the <a href="identify.html">identification guide</a> and choose "Not sure". <a href="privacy.html">Full rules</a>.</p>
           <label>Photo
             <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required>
           </label>

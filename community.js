@@ -19,6 +19,7 @@ let userPos = null;     // where the viewer is, for "Near me"
 let flagsReady = false; // is the "Report this" table set up?
 let flags = {};         // moderators only: item id -> list of reasons people gave
 let hashHandled = false; // has the link's #post-... jump already happened?
+let guess = "all";       // identification filter: "all", "invasive", "native" or "unsure"
 
 // ---------- Tiny DOM helper ----------
 function h(tag, props, ...kids) {
@@ -205,8 +206,11 @@ function coordsText(p) {
 function renderFeed() {
   const feed = $("feed");
   feed.textContent = "";
-  let list = posts.slice();
+  let list = posts.filter((p) => guess === "all" || p.id_guess === guess);
   list.forEach((p) => delete p.km);
+  if (mode === "new" && guess !== "all") {
+    $("feed-status").textContent = `${list.length} of ${posts.length} photo${posts.length === 1 ? "" : "s"}`;
+  }
   if (mode === "near" && userPos) {
     list.forEach((p) => (p.km = km(userPos, p)));
     list.sort((a, b) => a.km - b.km);
@@ -218,9 +222,11 @@ function renderFeed() {
   }
   if (!list.length) {
     const nearby = mode === "near" && userPos;
-    feed.append(h("p", { className: "empty" }, nearby
-      ? "No photos near you yet. Try a wider distance, or be the first to share one!"
-      : "No photos yet. Be the first to share one!"));
+    feed.append(h("p", { className: "empty" }, guess !== "all" && posts.length
+      ? "No photos match this filter. Choose All to see every photo."
+      : nearby
+        ? "No photos near you yet. Try a wider distance, or be the first to share one!"
+        : "No photos yet. Be the first to share one!"));
     return;
   }
   list.forEach((p) => feed.append(renderPost(p)));
@@ -351,6 +357,11 @@ $("new-btn").addEventListener("click", () => {
   renderFeed();
 });
 $("radius").addEventListener("change", renderFeed);
+document.querySelectorAll("[data-guess]").forEach((btn) => btn.addEventListener("click", () => {
+  guess = btn.dataset.guess;
+  document.querySelectorAll("[data-guess]").forEach((b) => b.classList.toggle("active", b === btn));
+  renderFeed();
+}));
 $("near-btn").addEventListener("click", () => {
   if (!navigator.geolocation) { $("feed-status").textContent = "Your browser can't share location."; return; }
   navigator.geolocation.getCurrentPosition(

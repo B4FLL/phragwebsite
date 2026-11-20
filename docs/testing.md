@@ -20,7 +20,19 @@ The site has no automated test suite. This file records the checks that were run
 
 Not tested: desktop layout, and the `community.html` location mini-map with the menu open.
 
-Screenshots: [with fix](testing/mobile-menu-with-fix.png), [without fix](testing/mobile-menu-without-fix.png).
+### Screenshots
+
+With the fix: the menu opens over the map.
+
+![Menu open over the map, with the fix](testing/mobile-menu-with-fix.png)
+
+Without the fix (simulated): the menu is hidden behind the map.
+
+![Menu hidden behind the map, without the fix](testing/mobile-menu-without-fix.png)
+
+Fullscreen map (with the fix): the map fills the whole screen.
+
+![Fullscreen map on a phone](testing/mobile-map-fullscreen.png)
 
 ### Repeat it
 

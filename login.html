@@ -45,6 +45,8 @@
 
         <div id="signed-in" hidden>
           <p>Signed in as <strong id="who"></strong>.</p>
+          <p>Member status: <strong id="status"></strong></p>
+          <p id="status-hint" class="small"></p>
           <p id="role-error" class="notice" hidden>
             We couldn't check your member access just now. This is usually a brief connection
             problem. <a href="login.html">Reload this page</a> to try again.
@@ -55,8 +57,6 @@
           </p>
           <div id="actions" class="stack">
             <a class="button" href="community.html">Go to Neighborhood photos</a>
-            <a id="edit-link" class="button" href="index.html" hidden>Edit the website</a>
-            <a id="review-link" class="button" href="map.html" hidden>Review map reports</a>
           </div>
           <p><button id="logout-btn" class="link-btn" type="button">Sign out</button></p>
         </div>

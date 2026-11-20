@@ -10,8 +10,16 @@ async function render() {
   $("signed-in").hidden = !member;
   if (!member) return;
   $("who").textContent = member.email;
-  $("edit-link").hidden = !member.isEditor;
-  $("review-link").hidden = !member.isExpert;
+  // Access comes only from this email's row(s) in the member list, never from a button.
+  const hints = [];
+  if (member.isEditor) hints.push("Open any page and use the bar at the bottom to edit it.");
+  if (member.isExpert) hints.push("Open the map to verify or reject reports.");
+  $("status").textContent = member.roleError ? "Couldn't check"
+    : member.isEditor && member.isExpert ? "Editor and expert"
+    : member.isEditor ? "Editor"
+    : member.isExpert ? "Expert"
+    : "Community member";
+  $("status-hint").textContent = hints.join(" ");
   $("role-error").hidden = !member.roleError;
   $("no-role").hidden = member.isEditor || member.isExpert || member.roleError;
 }

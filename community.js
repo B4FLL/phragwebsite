@@ -18,6 +18,7 @@ let mode = "new";       // "new" or "near"
 let userPos = null;     // where the viewer is, for "Near me"
 let flagsReady = false; // is the "Report this" table set up?
 let flags = {};         // moderators only: item id -> list of reasons people gave
+let hashHandled = false; // has the link's #post-... jump already happened?
 
 // ---------- Tiny DOM helper ----------
 function h(tag, props, ...kids) {
@@ -223,8 +224,11 @@ function renderFeed() {
     return;
   }
   list.forEach((p) => feed.append(renderPost(p)));
-  const target = location.hash && document.getElementById(location.hash.slice(1));
-  if (target) target.scrollIntoView();
+  // Jump to a linked post (#post-...) only when the page first opens, not on every redraw.
+  if (!hashHandled) {
+    const target = location.hash && document.getElementById(location.hash.slice(1));
+    if (target) target.scrollIntoView();
+  }
 }
 
 function renderPost(p) {
@@ -336,6 +340,7 @@ async function reload() {
     posts = [];
   }
   renderFeed();
+  hashHandled = true;
 }
 
 $("new-btn").addEventListener("click", () => {

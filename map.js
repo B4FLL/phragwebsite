@@ -336,13 +336,24 @@ const SOURCES = [
   { file: "data/gbif-utah.json", name: "GBIF" },
 ];
 
+// The two record files only change weekly, so fetch each once per visit, not after every report.
+const recordCache = {};
+function loadRecords(s) {
+  if (!recordCache[s.file]) {
+    recordCache[s.file] = fetch(s.file)
+      .then((res) => { if (!res.ok) throw new Error(`${s.file}: HTTP ${res.status}`); return res.json(); })
+      .catch((err) => { delete recordCache[s.file]; throw err; }); // a failed load can be retried
+  }
+  return recordCache[s.file];
+}
+
 async function load() {
   markers = [];
   const notes = [];
   let publicCount = 0, reportCount = 0;
   for (const s of SOURCES) {
     try {
-      const data = await (await fetch(s.file)).json();
+      const data = await loadRecords(s);
       data.records.forEach((r) => addPublicRecord(r, s.name));
       publicCount += data.records.length;
       notes.push(`${s.name} (${data.fetched})`);
@@ -482,8 +493,18 @@ async function renderQueue() {
       const btn = document.createElement("button");
       btn.type = "button"; btn.textContent = label; btn.className = cls;
       btn.addEventListener("click", async () => {
-        await store.setStatus(r.id, status, note.value.trim() || null);
-        renderQueue(); load();
+        const buttons = actions.querySelectorAll("button");
+        buttons.forEach((b) => (b.disabled = true)); // no double-sends while saving
+        try {
+          await store.setStatus(r.id, status, note.value.trim() || null);
+          renderQueue(); load();
+        } catch (err) {
+          console.error(err);
+          buttons.forEach((b) => (b.disabled = false));
+          let msg = box.querySelector(".queue-error");
+          if (!msg) { msg = document.createElement("p"); msg.className = "small queue-error"; msg.setAttribute("role", "alert"); box.appendChild(msg); }
+          msg.textContent = "Couldn't save. Check your connection and that you're still signed in, then try again.";
+        }
       });
       actions.appendChild(btn);
     }

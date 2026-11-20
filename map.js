@@ -540,6 +540,7 @@ form.addEventListener("submit", async (e) => {
     closeForm();
     alert("Thank you! Your report is on the map as unverified until an expert reviews it.");
     load();
+    if (!$("expert-section").hidden) renderQueue(); // an expert sees their own new report in the queue
   } catch (err) {
     console.error(err);
     $("form-msg").textContent = "Couldn't save your report. Please try again.";

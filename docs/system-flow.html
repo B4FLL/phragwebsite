@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phragmites Site: System Flow</title>
+<style>
+  :root {
+    --bg: #f7f5ee; --card: #ffffff; --ink: #1d2a22; --muted: #5d6b62; --line: #d9d5c4;
+    --green: #2f6b46; --green-dark: #1f3d2b; --tan: #e8dfc4;
+    --browser: #2a6fb0; --db: #2f6b46; --store: #a5671a; --out: #6b3fa0; --bot: #5d6b62; --mod: #b0382b;
+    --browser-bg: #e4eef8; --db-bg: #e1efe6; --store-bg: #f6ead6; --out-bg: #eee6f6; --bot-bg: #ebebe6; --mod-bg: #f8e4e1;
+    --ok: #2f6b46; --no: #a9a79a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14201a; --card: #1c2b23; --ink: #e8efe9; --muted: #a2b2a8; --line: #33463b;
+      --green: #6fbf8e; --green-dark: #0f1a14; --tan: #3a3926;
+      --browser: #7db4ea; --db: #7fd0a0; --store: #e3a85c; --out: #b99be0; --bot: #b5c0b8; --mod: #ef8f84;
+      --browser-bg: #1c3248; --db-bg: #1b3a29; --store-bg: #3d2f18; --out-bg: #2f2442; --bot-bg: #2a3530; --mod-bg: #432320;
+      --ok: #7fd0a0; --no: #667369;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14201a; --card: #1c2b23; --ink: #e8efe9; --muted: #a2b2a8; --line: #33463b;
+    --green: #6fbf8e; --green-dark: #0f1a14; --tan: #3a3926;
+    --browser: #7db4ea; --db: #7fd0a0; --store: #e3a85c; --out: #b99be0; --bot: #b5c0b8; --mod: #ef8f84;
+    --browser-bg: #1c3248; --db-bg: #1b3a29; --store-bg: #3d2f18; --out-bg: #2f2442; --bot-bg: #2a3530; --mod-bg: #432320;
+    --ok: #7fd0a0; --no: #667369;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 16px 56px; }
+  header.top { background: var(--green-dark); color: #fff; padding: 28px 16px; }
+  header.top .wrap { padding-bottom: 0; }
+  header.top h1 { margin: 0 0 6px; font-size: 1.6rem; line-height: 1.25; }
+  header.top p { margin: 0; color: #d3e3d8; max-width: 70ch; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+  nav.toc a { font-size: 0.85rem; padding: 6px 12px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+  nav.toc a:hover { border-color: var(--green); }
+  h2 { font-size: 1.3rem; margin: 40px 0 6px; scroll-margin-top: 12px; }
+  h2 .n { display: inline-grid; place-items: center; width: 1.7em; height: 1.7em; border-radius: 50%; background: var(--green); color: #fff; font-size: 0.8em; margin-right: 8px; }
+  h3 { font-size: 1rem; margin: 0 0 6px; }
+  .lead { color: var(--muted); margin: 0 0 16px; max-width: 75ch; }
+  code { font: 0.85em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--tan); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+
+  /* Actor tags */
+  .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .t-browser { background: var(--browser-bg); color: var(--browser); }
+  .t-db { background: var(--db-bg); color: var(--db); }
+  .t-store { background: var(--store-bg); color: var(--store); }
+  .t-out { background: var(--out-bg); color: var(--out); }
+  .t-bot { background: var(--bot-bg); color: var(--bot); }
+  .t-mod { background: var(--mod-bg); color: var(--mod); }
+
+  /* Architecture diagram (HTML boxes so it stays readable on phones) */
+  .arch { display: grid; gap: 0; }
+  .layer { border: 2px solid var(--line); border-radius: 12px; padding: 12px; background: var(--card); }
+  .layer > h3 { margin: 0 0 8px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .layer.l-browser { border-color: var(--browser); }
+  .layer.l-db { border-color: var(--db); }
+  .layer.l-out { border-color: var(--out); }
+  .layer.l-bot { border-color: var(--bot); }
+  .layer.l-host { border-color: var(--store); }
+  .cols { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); }
+  .cols.two { grid-template-columns: repeat(2, 1fr); }
+  .box { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 0.88rem; background: var(--bg); }
+  .box b { display: block; font-size: 0.9rem; margin-bottom: 2px; }
+  .box ul { margin: 4px 0 0; padding-left: 18px; }
+  .box li { margin: 1px 0; }
+  .arrow { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 6px 0; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .arrow::before, .arrow::after { content: ""; flex: 1 1 24px; max-width: 120px; border-top: 2px dashed var(--line); }
+  .arrow strong { color: var(--ink); }
+  .pagegrid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+
+  /* Script order */
+  .chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 14px; }
+  .chain .step { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 0.85rem; }
+  .chain .go { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+  .tablewrap table { min-width: 560px; }
+
+  /* Flow cards */
+  .flow { margin: 14px 0; padding: 0; }
+  .flow > summary { cursor: pointer; list-style: none; padding: 14px 16px; font-weight: 700; display: flex; gap: 10px; align-items: center; }
+  .flow > summary::-webkit-details-marker { display: none; }
+  .flow > summary::before { content: "▸"; color: var(--green); transition: transform .15s; }
+  .flow[open] > summary::before { transform: rotate(90deg); }
+  .flow > summary small { font-weight: 400; color: var(--muted); margin-left: auto; text-align: right; }
+  .flow .body { padding: 0 16px 16px; }
+  .flow .plain { margin: 0 0 12px; color: var(--muted); }
+  ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+  ol.steps > li { counter-increment: s; position: relative; padding: 8px 0 8px 40px; border-left: 2px solid var(--line); margin-left: 14px; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: -15px; top: 8px; width: 28px; height: 28px; border-radius: 50%; background: var(--green); color: #fff; font-size: 0.8rem; font-weight: 700; display: grid; place-items: center; }
+  ol.steps > li:last-child { border-left-color: transparent; }
+  ol.steps .who { margin-right: 6px; }
+  ol.steps .file { display: block; color: var(--muted); font-size: 0.8rem; margin-top: 2px; }
+  .guard { margin: 10px 0 0; padding: 8px 12px; border-left: 4px solid var(--green); background: var(--db-bg); border-radius: 0 8px 8px 0; font-size: 0.88rem; }
+  .guard.warn { border-left-color: var(--store); background: var(--store-bg); }
+
+  /* Permissions grid */
+  td.y { color: var(--ok); font-weight: 700; text-align: center; }
+  td.n { color: var(--no); text-align: center; }
+  th.c { text-align: center; }
+  td.o { color: var(--store); font-weight: 700; text-align: center; font-size: 0.8rem; }
+
+  .callout { border: 2px dashed var(--store); background: var(--store-bg); border-radius: 10px; padding: 12px 16px; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 0.82rem; }
+  .themebtn { position: absolute; right: 16px; top: 16px; z-index: 5; border: 1px solid #5d7a68; background: transparent; color: #fff; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 0.8rem; cursor: pointer; }
+  header.top { position: relative; }
+  header.top h1 { padding-right: 84px; }
+
+  @media (max-width: 760px) {
+    .cols, .cols.two { grid-template-columns: 1fr; }
+    .flow > summary { flex-wrap: wrap; }
+    .flow > summary small { margin-left: 0; text-align: left; width: 100%; }
+    header.top h1 { font-size: 1.35rem; }
+    ol.steps > li { padding-left: 30px; margin-left: 12px; }
+    .flow .body { padding: 0 12px 14px; }
+  }
+  @media print { .themebtn { display: none; } .flow:not([open]) .body { display: block; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="themebtn" id="themebtn" type="button" aria-label="Switch light or dark theme">Theme</button>
+  <div class="wrap">
+    <h1>Phragmites site: how the system works</h1>
+    <p>Where each piece lives, how a page starts up, and what happens step by step when someone views the map, reports a sighting, posts a photo, signs in or edits the site. Everything here comes from the project's code and database scripts.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="toc" aria-label="Sections">
+    <a href="#big-picture">1 Big picture</a>
+    <a href="#startup">2 Page start-up</a>
+    <a href="#flows">3 Step-by-step flows</a>
+    <a href="#permissions">4 Who can do what</a>
+    <a href="#demo">5 Demo mode</a>
+  </nav>
+
+  <div class="legend" aria-label="Colour key">
+    <span class="tag t-browser">Browser</span>
+    <span class="tag t-db">Supabase database</span>
+    <span class="tag t-store">Supabase photo storage</span>
+    <span class="tag t-out">Outside service</span>
+    <span class="tag t-mod">Expert / editor action</span>
+    <span class="tag t-bot">Automatic job</span>
+  </div>
+
+  <!-- 1 -->
+  <h2 id="big-picture"><span class="n">1</span>The big picture</h2>
+  <p class="lead">The website is a set of plain pages. There is no server of our own: the visitor's browser does the work and talks directly to Supabase, which holds the data and enforces the privacy rules.</p>
+
+  <div class="arch">
+    <div class="layer l-browser">
+      <h3><span class="tag t-browser">Visitor's browser</span> runs the pages</h3>
+      <div class="pagegrid">
+        <div class="box"><b>index.html</b>Project story</div>
+        <div class="box"><b>map.html</b>Utah map, report form, expert queue</div>
+        <div class="box"><b>community.html</b>Neighborhood photo feed</div>
+        <div class="box"><b>identify.html</b>Identification guide</div>
+        <div class="box"><b>login.html</b>Email sign-in, member page</div>
+        <div class="box"><b>privacy.html</b>Privacy and rules</div>
+      </div>
+    </div>
+
+    <div class="arrow"><strong>loads pages and files from</strong></div>
+
+    <div class="layer l-host">
+      <h3><span class="tag t-store">GitHub Pages</span> static hosting from the <code>main</code> branch</h3>
+      <div class="cols">
+        <div class="box"><b>Pages and code</b>HTML, <code>styles.css</code>, <code>map.css</code>, <code>community.css</code>, and the scripts in section 2</div>
+        <div class="box"><b>Observation data</b><code>data/inat-utah.json</code> and <code>data/gbif-utah.json</code>, read with <code>fetch</code> by the map</div>
+        <div class="box"><b>Connection settings</b><code>config.js</code>: Supabase URL and public key. Empty means demo mode.</div>
+      </div>
+    </div>
+
+    <div class="arrow"><strong>browser also talks to</strong></div>
+
+    <div class="cols">
+      <div class="layer l-db">
+        <h3><span class="tag t-db">Supabase</span></h3>
+        <div class="box"><b>Postgres database</b>
+          <ul>
+            <li><code>reports</code> → view <code>public_reports</code></li>
+            <li><code>posts</code> → <code>public_posts</code></li>
+            <li><code>comments</code> → <code>public_comments</code></li>
+            <li><code>flags</code> (moderators only)</li>
+            <li><code>site_content</code> + <code>site_content_history</code></li>
+            <li><code>member_emails</code>, <code>editors</code>, <code>experts</code></li>
+          </ul>
+        </div>
+        <div class="box" style="margin-top:8px"><b>Storage buckets</b>
+          <ul>
+            <li><code>community-photos</code> (JPEG, 5 MB)</li>
+            <li><code>site-images</code> (JPEG/PNG/WebP, 5 MB)</li>
+          </ul>
+        </div>
+        <div class="box" style="margin-top:8px"><b>Auth</b>Email sign-in link; roles come from the database functions <code>is_editor()</code>, <code>is_expert()</code>, <code>is_moderator()</code></div>
+      </div>
+
+      <div class="layer l-out">
+        <h3><span class="tag t-out">Outside services</span> used by the browser</h3>
+        <div class="box"><b>Map tiles</b>OpenStreetMap (street) and Esri (satellite)</div>
+        <div class="box" style="margin-top:8px"><b>Address search</b>OpenStreetMap Nominatim, Utah only, one request per second (<code>geocode.js</code>)</div>
+        <div class="box" style="margin-top:8px"><b>Libraries from CDNs</b>Leaflet 1.9.4 and leaflet-rotate 0.2.8 (unpkg); supabase-js 2.45.4 and exifr 7.1.3 (jsDelivr)</div>
+        <div class="box" style="margin-top:8px"><b>Links out</b>Google Maps, iNaturalist and GBIF record pages</div>
+      </div>
+
+      <div class="layer l-bot">
+        <h3><span class="tag t-bot">GitHub Actions</span> no one needs to be online</h3>
+        <div class="box"><b>Refresh map data</b>Mondays 09:00 UTC. Runs <code>scripts/fetch-inat.ps1</code> and <code>fetch-gbif.ps1</code>, checks the counts look sane, commits changed files in <code>data/</code>.</div>
+        <div class="box" style="margin-top:8px"><b>Keep database awake</b>Mondays and Thursdays. Reads one row from <code>public_reports</code> so the free Supabase project is not paused.</div>
+        <div class="box" style="margin-top:8px"><b>Data sources</b>iNaturalist API and GBIF API, pulled by those scripts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <h2 id="startup"><span class="n">2</span>How a page starts up</h2>
+  <p class="lead">Every page loads the same shared pieces in the same order, so each page script can rely on the one signed-in client.</p>
+  <div class="chain" aria-label="Script load order">
+    <span class="step"><code>config.js</code><br>sets <code>PHRAG_CONFIG</code></span><span class="go">→</span>
+    <span class="step"><code>auth.js</code><br>makes the one Supabase client; exposes <code>window.phrag</code> = client, demo flag, <code>getMember()</code></span><span class="go">→</span>
+    <span class="step"><code>script.js</code><br>mobile menu, footer year</span><span class="go">→</span>
+    <span class="step">page script</span>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Page</th><th>Page script</th><th>Also loads</th></tr></thead>
+      <tbody>
+        <tr><td><code>index.html</code>, <code>identify.html</code>, <code>privacy.html</code></td><td><code>cms.js</code> (editable text and photos)</td><td>supabase-js</td></tr>
+        <tr><td><code>map.html</code></td><td><code>map.js</code></td><td>Leaflet, leaflet-rotate, supabase-js, <code>geocode.js</code></td></tr>
+        <tr><td><code>community.html</code></td><td><code>community.js</code></td><td>Leaflet, exifr, supabase-js, <code>geocode.js</code></td></tr>
+        <tr><td><code>login.html</code></td><td><code>login.js</code></td><td>supabase-js</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3 -->
+  <h2 id="flows"><span class="n">3</span>Step-by-step flows</h2>
+  <p class="lead">Open a flow to see each step, who does it, and which file or table is involved.</p>
+
+  <details class="flow card" open>
+    <summary>Sign in and get a role <small>login.js · auth.js · members.sql</small></summary>
+    <div class="body">
+      <p class="plain">Members sign in with an email link, no password. The site then asks the database whether that email is an editor or an expert.</p>
+      <ol class="steps">
+        <li><span class="tag t-browser who">Browser</span>Person types their email on the Members page and presses the button. <code>sb.auth.signInWithOtp</code> asks for a link that returns to the same page.<span class="file">login.js</span></li>
+        <li><span class="tag t-db who">Supabase</span>Auth emails a one-time link. Opening it signs the person in (a session in the browser).</li>
+        <li><span class="tag t-browser who">Browser</span><code>getMember()</code> reads the session, then asks <code>is_editor</code> and <code>is_expert</code> at the same time.<span class="file">auth.js</span></li>
+        <li><span class="tag t-db who">Database</span>The functions look up the person's lowercased email (from their verified sign-in) in <code>member_emails</code>, or their user id in the older <code>editors</code> / <code>experts</code> tables.<span class="file">supabase/members.sql</span></li>
+        <li><span class="tag t-browser who">Browser</span>Page shows or hides editor and expert features. If a check fails it retries once, then uses the last good answer for this tab. If there is none, it says it couldn't check instead of silently hiding features.</li>
+      </ol>
+      <p class="guard">Anyone who signs in is a normal signed-in member. Roles only come from an admin adding the email to <code>member_emails</code> in the Supabase dashboard. The website itself cannot read or change that list.</p>
+    </div>
+  </details>
+
+  <details class="flow card" open>
+    <summary>View the map <small>map.js</small></summary>
+    <div class="body">
+      <p class="plain">The map combines four sources into colored dots, and filters them in the browser without asking again.</p>
+      <ol class="steps">
+        <li><span class="tag t-browser who">Browser</span>Reads <code>data/inat-utah.json</code> and <code>data/gbif-utah.json</code> (static files). Records are colored by subspecies; ones older than 5 years are drawn faded.</li>
+        <li><span class="tag t-db who">Database</span>Reads <code>public_reports</code>: community sightings with coordinates rounded to about 1 km, rejected ones removed.<span class="file">supabase/schema.sql</span></li>
+        <li><span class="tag t-db who">Database</span>Reads <code>public_posts</code> for purple neighbor-photo pins; photo files come from the public <code>community-photos</code> bucket.</li>
+        <li><span class="tag t-out who">Outside</span>Draws street or satellite tiles; the search box asks Nominatim for Utah addresses.</li>
+        <li><span class="tag t-browser who">Browser</span>If one source fails, the others still show and the stats line says which failed.</li>
+      </ol>
+    </div>
+  </details>
+
+  <details class="flow card" open>
+    <summary>Report a sighting, then expert review <small>map.js · schema.sql</small></summary>
+    <div class="body">
+      <p class="plain">Anyone can report a sighting. It appears on the map as "unverified" until an expert checks it.</p>
+      <ol class="steps">
+        <li><span class="tag t-browser who">Browser</span>Visitor places a pin inside Utah, fills date, ID guess, patch size, notes and an optional name. A hidden spam-trap field must be empty.</li>
+        <li><span class="tag t-db who">Database</span>Insert into <code>reports</code>. The rule only allows <code>status = 'unverified'</code>, with no expert note. Checks also enforce Utah bounds and no future dates.</li>
+        <li><span class="tag t-mod who">Expert</span>On the map page the expert review queue reads <code>reports</code> directly (exact coordinates) for rows still unverified.</li>
+        <li><span class="tag t-mod who">Expert</span>Presses Verify or Reject with an optional note. The row gets the new <code>status</code>, <code>expert_note</code> and <code>verified_by</code>.</li>
+        <li><span class="tag t-db who">Database</span><code>public_reports</code> now shows the report as verified, or hides it if rejected.</li>
+      </ol>
+      <p class="guard">The public never reads the <code>reports</code> table. It reads the rounded view, so exact spots on private land stay hidden.</p>
+    </div>
+  </details>
+
+  <details class="flow card" open>
+    <summary>Post a neighborhood photo <small>community.js · community.sql</small></summary>
+    <div class="body">
+      <p class="plain">Signed-in people share a photo with a location. The saved copy is re-drawn so hidden camera data never reaches the site.</p>
+      <ol class="steps">
+        <li><span class="tag t-browser who">Browser</span>Person chooses a photo (JPG, PNG or WebP, up to 25 MB before shrinking). exifr reads its GPS position and date, if it has them.</li>
+        <li><span class="tag t-browser who">Browser</span>The location comes from the photo, a click on the small map, the device location, or an address search (Nominatim). It must be inside Utah.</li>
+        <li><span class="tag t-browser who">Browser</span>The photo is shrunk to at most 1600 px wide and re-saved as JPEG at 82% quality. This drops hidden data such as GPS.</li>
+        <li><span class="tag t-store who">Storage</span>Uploaded to <code>community-photos/&lt;user id&gt;/&lt;time&gt;-&lt;random&gt;.jpg</code>. People can only upload into their own folder.</li>
+        <li><span class="tag t-db who">Database</span>Inserts a row in <code>posts</code> (name, location, <code>precise</code> flag, date, ID guess, caption, image path). A trigger refuses more than 10 posts per hour.</li>
+        <li><span class="tag t-browser who">Browser</span>If the insert fails, the just-uploaded photo is deleted so no orphan is left. Otherwise the feed reloads.</li>
+      </ol>
+      <p class="guard">Public location is rounded to about 1 km unless the poster ticked "show my exact location". Only the poster, experts and editors can read the exact spot.</p>
+    </div>
+  </details>
+
+  <details class="flow card" open>
+    <summary>Read, comment, hide and report <small>community.js · community.sql</small></summary>
+    <div class="body">
+      <p class="plain">Anyone can read the feed. Signed-in people can comment and report. Moderators can hide.</p>
+      <ol class="steps">
+        <li><span class="tag t-db who">Database</span>The feed reads <code>public_posts</code> (newest 100, visible only). The view rounds locations, hides user ids, adds <code>comment_count</code>, <code>is_mine</code>, and <code>author_is_expert</code>, which is worked out inside the view from the expert lists.</li>
+        <li><span class="tag t-browser who">Browser</span>"Near me" sorts by distance from the device location in the browser; the location is not sent anywhere.</li>
+        <li><span class="tag t-db who">Database</span>Opening comments reads <code>public_comments</code>. A signed-in person can add one (limit 30 per hour) or delete their own.</li>
+        <li><span class="tag t-db who">Database</span>"Report" inserts into <code>flags</code> (once per person per item, 20 per hour). The Report button only appears after the <code>flags</code> table exists.</li>
+        <li><span class="tag t-mod who">Expert / editor</span>Sees reasons under flagged items. "Hide" updates only <code>status</code> and <code>hidden_by</code>; the item leaves the public feed but stays in the database.</li>
+        <li><span class="tag t-store who">Storage</span>When an author deletes a post, the row is deleted and then its photo file is removed.</li>
+      </ol>
+    </div>
+  </details>
+
+  <details class="flow card" open>
+    <summary>Edit the website text and photos <small>cms.js · cms.sql</small></summary>
+    <div class="body">
+      <p class="plain">The HTML holds the starting text. Whatever editors save in the database overrides it for everyone.</p>
+      <ol class="steps">
+        <li><span class="tag t-db who">Database</span>On every page with editable spots, <code>cms.js</code> reads all rows of <code>site_content</code> (open to everyone) and fills each <code>data-edit</code> text and <code>data-edit-img</code> photo slot by its key. Empty optional cards and list items stay hidden from visitors.</li>
+        <li><span class="tag t-browser who">Browser</span>If the person is an editor, an "Edit page" bar appears. Text becomes plain-text editable; photos can be added or removed.</li>
+        <li><span class="tag t-browser who">Browser</span>A new photo is shrunk to JPEG (this removes GPS data) and the editor is asked for a short description that is read aloud to blind visitors.</li>
+        <li><span class="tag t-store who">Storage</span>On Save, new photos upload to <code>site-images</code> (editors only).</li>
+        <li><span class="tag t-db who">Database</span>Changed items are written to <code>site_content</code> with an upsert on <code>key</code>. A trigger also copies every version into <code>site_content_history</code>, so a bad edit can be recovered.</li>
+      </ol>
+    </div>
+  </details>
+
+  <details class="flow card" open>
+    <summary>Automatic weekly jobs <small>.github/workflows/</small></summary>
+    <div class="body">
+      <p class="plain">Two scheduled jobs keep the map data fresh and the free database from pausing.</p>
+      <ol class="steps">
+        <li><span class="tag t-bot who">Monday 09:00 UTC</span>Refresh job starts on a Windows runner and downloads Utah Phragmites records from iNaturalist and GBIF (location, date, taxon and link only: no photos or usernames).</li>
+        <li><span class="tag t-bot who">Check</span>If iNaturalist has fewer than 800 records or GBIF fewer than 80, the job stops and publishes nothing.</li>
+        <li><span class="tag t-bot who">Commit</span>If the files changed, the job commits <code>data/</code> to the repository, and GitHub Pages serves the new files. Those commits also keep the schedule from being switched off after 60 quiet days.</li>
+        <li><span class="tag t-bot who">Mon and Thu</span>The keep-awake job reads one row from <code>public_reports</code>. If the project was paused it fails, and GitHub emails the repository admins.</li>
+      </ol>
+    </div>
+  </details>
+
+  <!-- 4 -->
+  <h2 id="permissions"><span class="n">4</span>Who can do what</h2>
+  <p class="lead">These rules are enforced by the database (row-level security), not just by hiding buttons on the page.</p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Action</th><th class="c">Visitor</th><th class="c">Signed in</th><th class="c">Expert</th><th class="c">Editor</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>View map, records, photo feed, comments, site text</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>Submit a sighting (saved as unverified)</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>Post a photo, comment, or report an item</td><td class="n">–</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>Delete own post or comment</td><td class="n">–</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>Verify or reject sightings; see exact sighting coordinates</td><td class="n">–</td><td class="n">–</td><td class="y">✓</td><td class="n">–</td></tr>
+        <tr><td>Hide others' posts and comments; read reports (flags); see exact photo locations; delete others' items</td><td class="n">–</td><td class="n">–</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>Edit website text and photos; read edit history</td><td class="n">–</td><td class="n">–</td><td class="n">–</td><td class="y">✓</td></tr>
+        <tr><td>Add or remove members (<code>member_emails</code>)</td><td class="n">–</td><td class="n">–</td><td class="n">–</td><td class="o">Supabase dashboard admin only</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="guard warn">Visible expert tags are looked up live from the expert lists. Removing someone from the list removes their tag the next time the feed loads. A commenter's typed name can say anything, so trust the tag, not the name.</p>
+
+  <!-- 5 -->
+  <h2 id="demo"><span class="n">5</span>Demo mode</h2>
+  <div class="callout">
+    <p style="margin-top:0">If <code>supabaseUrl</code> or <code>supabaseKey</code> in <code>config.js</code> is empty, <code>auth.js</code> sets <code>demo = true</code> and no Supabase client is made. Every page then uses the same <code>store</code> functions but saves to the visitor's own browser (<code>localStorage</code>), so nothing is shared.</p>
+    <p style="margin-bottom:0">Keys used: <code>phragReports</code>, <code>phragPosts</code>, <code>phragComments</code>, <code>phragFlags</code>, <code>phragDemoMember</code> (the "demo member" button), plus <code>phragName</code> (remembered display name) and the page-text store used by <code>cms.js</code>. Photos are kept as data URLs there. The live site is connected to Supabase, so it is not in demo mode.</p>
+  </div>
+
+  <footer>
+    Built from the project code: <code>auth.js</code>, <code>cms.js</code>, <code>community.js</code>, <code>map.js</code>, <code>login.js</code>, <code>geocode.js</code>, <code>supabase/*.sql</code>, <code>scripts/</code> and <code>.github/workflows/</code>. If those change, update this page.
+  </footer>
+</main>
+
+<script>
+  (function () {
+    var root = document.documentElement, btn = document.getElementById("themebtn");
+    function current() {
+      var t = root.getAttribute("data-theme");
+      if (t) return t;
+      return window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    btn.addEventListener("click", function () { root.setAttribute("data-theme", current() === "dark" ? "light" : "dark"); });
+  })();
+</script>
+</body>
+</html>

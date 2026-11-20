@@ -14,6 +14,7 @@ Website and Utah tracking map for our FIRST LEGO League innovation project on in
 - `community.html`, `community.js`, `community.css` – Neighborhood photo feed with comments and expert tags
 - `supabase/community.sql` – tables, privacy rules and photo storage for the Neighborhood feed
 - `privacy.html` – privacy notice and community rules
+- `docs/system-flow.html` – open in a browser: diagrams of how the whole system works (pages, database, who can do what)
 - `.github/workflows/` – the two automatic jobs (data refresh, database keep-alive)
 - `data/inat-utah.json` – Utah observations pulled directly from iNaturalist (newest data)
 - `data/gbif-utah.json` – museum/herbarium and other records from GBIF (iNaturalist records are excluded here to avoid duplicates)

@@ -1,5 +1,6 @@
 const { demo, sb, getMember } = window.phrag;
 const $ = (id) => document.getElementById(id);
+const RESEND_SECONDS = 60;
 
 async function render() {
   $("demo-note").hidden = !demo;
@@ -30,13 +31,28 @@ $("login-form").addEventListener("submit", async (e) => {
   const msg = $("login-msg");
   if (demo) { msg.textContent = "Demo mode has no email. Use the demo button instead."; return; }
   const email = e.target.email.value.trim();
+  // Supabase's free email sender allows only a few emails per hour, so block repeat taps.
+  const button = e.target.querySelector("[type=submit]");
+  if (button.disabled) return;
+  button.disabled = true;
   const { error } = await sb.auth.signInWithOtp({
     email,
     options: { emailRedirectTo: location.origin + location.pathname },
   });
-  msg.textContent = error
-    ? "Couldn't send the link. Wait a minute and try again."
-    : "Check your email for the sign-in link (look in spam too).";
+  if (error) {
+    msg.textContent = "Couldn't send the link. Wait a minute and try again.";
+    setTimeout(() => (button.disabled = false), 5000);
+    return;
+  }
+  let left = RESEND_SECONDS;
+  const tick = () => {
+    msg.textContent = `Link sent. Check your email (look in spam too). You can send another in ${left} seconds.`;
+    if (left-- <= 0) {
+      msg.textContent = "Check your email for the sign-in link (look in spam too). Didn't get it? You can send another now.";
+      button.disabled = false;
+    } else setTimeout(tick, 1000);
+  };
+  tick();
 });
 
 $("demo-btn").addEventListener("click", () => {

@@ -93,7 +93,7 @@ powershell -ExecutionPolicy Bypass -File scripts/fetch-inat.ps1
 powershell -ExecutionPolicy Bypass -File scripts/fetch-gbif.ps1
 ```
 
-The same two scripts also run automatically every week (see "Automatic jobs"). Records older than 5 years are drawn faded and can be hidden (`OLD_YEARS` in `map.js`). Re-run the scripts every few weeks so the map stays current. GBIF data is licensed per record (CC0, CC-BY, or CC-BY-NC); credit both GBIF and iNaturalist on the site and in Sources. We store only location, date, taxon, and link, never photos or usernames.
+The same two scripts also run automatically every week (see "Automatic jobs"), so you only need to run them by hand to refresh the map between those runs. Records older than 5 years are drawn faded and can be hidden (`OLD_YEARS` in `map.js`). GBIF data is licensed per record (CC0, CC-BY, or CC-BY-NC); credit both GBIF and iNaturalist on the site and in Sources. We store only location, date, taxon, and link, never photos or usernames.
 
 ## Members and editing
 

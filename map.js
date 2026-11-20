@@ -211,12 +211,33 @@ const photoLayer = L.layerGroup().addTo(map);
 // Every marker is kept here so the filters can show/hide them without refetching.
 const shown = L.layerGroup().addTo(map);
 let markers = [];
-function applyFilters() {
+// The records that pass the current checkboxes (used for drawing and for downloads).
+function visibleMarkers() {
   const on = {};
   document.querySelectorAll("[data-layer]").forEach((box) => (on[box.dataset.layer] = box.checked));
   const showOld = $("show-old").checked;
+  return markers.filter(({ cat, old }) => on[cat] && (showOld || !old));
+}
+function applyFilters() {
   shown.clearLayers();
-  for (const { m, cat, old } of markers) if (on[cat] && (showOld || !old)) m.addTo(shown);
+  for (const { m } of visibleMarkers()) m.addTo(shown);
+}
+
+// Remember the checkboxes between visits (this browser only).
+const FILTER_KEY = "phragFilters";
+const filterBoxes = () => document.querySelectorAll("[data-layer], #show-old, #show-photos");
+function saveFilters() {
+  try {
+    const o = {};
+    filterBoxes().forEach((b) => (o[b.dataset.layer || b.id] = b.checked));
+    localStorage.setItem(FILTER_KEY, JSON.stringify(o));
+  } catch (e) { /* storage blocked: filters just aren't remembered */ }
+}
+function restoreFilters() {
+  try {
+    const o = JSON.parse(localStorage.getItem(FILTER_KEY) || "{}");
+    filterBoxes().forEach((b) => { const k = b.dataset.layer || b.id; if (typeof o[k] === "boolean") b.checked = o[k]; });
+  } catch (e) { /* ignore */ }
 }
 
 function row(parent, label, value) {
@@ -258,7 +279,10 @@ function addPublicRecord(r, source) {
   a.href = r.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = `View on ${source}`;
   el.append(a, document.createTextNode(" · "), googleLink(r.lat, r.lng));
   m.bindPopup(el);
-  markers.push({ m, cat, old });
+  markers.push({ m, cat, old, rec: {
+    source, category: cat, taxon: r.taxon || "", date: r.date || "", lat: r.lat, lng: r.lng, status: "",
+    dataset: r.dataset || "", license: r.license || "", url: r.url || "", credit: source === "GBIF" ? "GBIF.org" : "iNaturalist",
+  } });
 }
 
 function googleLink(lat, lng) {
@@ -286,7 +310,10 @@ function addReport(r) {
   if (r.expert_note) row(el, "Expert note", r.expert_note);
   el.appendChild(googleLink(r.lat, r.lng));
   m.bindPopup(el);
-  markers.push({ m, cat, old: false });
+  markers.push({ m, cat, old: false, rec: {
+    source: "Community report", category: cat, taxon: "", date: r.observed_on, lat: r.lat, lng: r.lng, status: r.status,
+    dataset: "Utah Phragmites Project community reports (locations rounded to about 1 km)", license: "", url: "", credit: "Utah Phragmites Project",
+  } });
 }
 
 const PHOTO_PATH = /^[0-9a-f-]{36}\/[A-Za-z0-9._-]{1,80}$/;
@@ -380,14 +407,64 @@ async function load() {
     `. ${oldCount.toLocaleString()} records are older than ${OLD_YEARS} years.`;
 }
 
-document.querySelectorAll("[data-layer], #show-old").forEach((box) => box.addEventListener("change", applyFilters));
-$("show-photos").addEventListener("change", (e) => (e.target.checked ? photoLayer.addTo(map) : map.removeLayer(photoLayer)));
+document.querySelectorAll("[data-layer], #show-old").forEach((box) => box.addEventListener("change", () => { applyFilters(); saveFilters(); }));
+$("show-photos").addEventListener("change", (e) => { (e.target.checked ? photoLayer.addTo(map) : map.removeLayer(photoLayer)); saveFilters(); });
+
+// ---------- Share and download ----------
+$("copy-link").addEventListener("click", async () => {
+  const c = map.getCenter();
+  const url = `${location.origin}${location.pathname}?lat=${c.lat.toFixed(5)}&lng=${c.lng.toFixed(5)}&zoom=${map.getZoom()}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    showHint("Link copied. It opens the map at this spot.");
+  } catch (e) {
+    prompt("Copy this link:", url); // clipboard blocked (for example on plain http)
+  }
+});
+
+function download(filename, type, text) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type }));
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+// Spreadsheet programs run text starting with = + - @ as a formula, so defuse those.
+const csvCell = (v) => {
+  let s = String(v ?? "");
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+};
+const FIELDS = ["source", "category", "taxon", "date", "lat", "lng", "status", "dataset", "license", "url", "credit"];
+const stamp = () => new Date().toISOString().slice(0, 10);
+
+$("dl-csv").addEventListener("click", () => {
+  const rows = visibleMarkers().map((x) => x.rec);
+  const csv = [FIELDS.join(","), ...rows.map((r) => FIELDS.map((f) => csvCell(r[f])).join(","))].join("\r\n");
+  download(`utah-phragmites-${stamp()}.csv`, "text/csv;charset=utf-8", csv);
+  showHint(`Downloaded ${rows.length.toLocaleString()} records.`);
+});
+$("dl-geojson").addEventListener("click", () => {
+  const rows = visibleMarkers().map((x) => x.rec);
+  const geo = {
+    type: "FeatureCollection",
+    credits: "Records from iNaturalist and GBIF.org (licensed per record, see each license field) and community reports from the Utah Phragmites Project. Community report locations are rounded to about 1 km.",
+    features: rows.map(({ lat, lng, ...props }) => ({ type: "Feature", geometry: { type: "Point", coordinates: [lng, lat] }, properties: props })),
+  };
+  download(`utah-phragmites-${stamp()}.geojson`, "application/geo+json", JSON.stringify(geo));
+  showHint(`Downloaded ${rows.length.toLocaleString()} records.`);
+});
 
 if (demo) {
   const b = $("mode-banner");
   b.hidden = false;
   b.textContent = "Demo mode: reports are saved only in this browser. The team still needs to connect the database (see README).";
 }
+
+restoreFilters();
+if (!$("show-photos").checked) map.removeLayer(photoLayer);
 
 // ---------- Report form ----------
 let pin = null;

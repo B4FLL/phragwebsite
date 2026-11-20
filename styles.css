@@ -235,6 +235,10 @@ a {
 .cms-bar button.cms-primary { background: var(--tan); color: var(--green-dark); border-color: var(--tan); font-weight: 600; }
 .cms-bar button:disabled { opacity: 0.6; cursor: wait; }
 .cms-bar a { color: #e6efe8; margin-left: auto; }
+.cms-history { flex-basis: 100%; max-height: 40vh; overflow-y: auto; background: rgba(255,255,255,.08); border-radius: 6px; padding: 8px 10px; font-size: 0.9rem; color: #fff; }
+.cms-history-row { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.15); }
+.cms-history-row:last-child { border-bottom: 0; }
+.cms-history-row span { overflow-wrap: anywhere; min-width: 0; }
 .cms-status { font-size: 0.9rem; color: #e6efe8; }
 
 body.editing { padding-bottom: 80px; }

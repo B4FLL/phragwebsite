@@ -6,6 +6,7 @@
 (function () {
   const { cfg, demo, sb, getMember } = window.phrag;
   const STORE_KEY = "phragContent";   // demo mode only
+  const HISTORY_KEY = "phragContentHistory";   // demo mode only
   const BUCKET = "site-images";
   const textEls = [...document.querySelectorAll("[data-edit]")];
   const imgEls = [...document.querySelectorAll("[data-edit-img]")];
@@ -73,6 +74,10 @@
       const all = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
       rows.forEach((r) => (all[r.key] = r.value));
       localStorage.setItem(STORE_KEY, JSON.stringify(all));
+      // Mirror the database trigger: every save is also kept as a history entry.
+      const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+      rows.forEach((r) => hist.push({ id: Date.now() + Math.random(), key: r.key, value: r.value, changed_at: new Date().toISOString() }));
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(hist.slice(-200)));
       return;
     }
     const { error } = await sb.from("site_content").upsert(rows, { onConflict: "key" });
@@ -131,14 +136,81 @@
   const editBtn = mk("Edit page", "cms-primary", () => startEditing());
   const saveBtn = mk("Save changes", "cms-primary", () => save());
   const cancelBtn = mk("Cancel", "", () => cancel());
+  const historyBtn = mk("Previous versions", "", () => toggleHistory());
   const members = document.createElement("a");
   members.href = "login.html"; members.textContent = "Member page";
-  bar.append(editBtn, saveBtn, cancelBtn, status, members);
+  const historyBox = document.createElement("div");
+  historyBox.className = "cms-history";
+  historyBox.hidden = true;
+  bar.append(editBtn, saveBtn, cancelBtn, historyBtn, status, members, historyBox);
   document.body.appendChild(bar);
 
   function setBar() {
     editBtn.hidden = editing;
     saveBtn.hidden = cancelBtn.hidden = !editing;
+    historyBtn.hidden = editing;   // restoring while typing would overwrite unsaved edits
+    if (editing) historyBox.hidden = true;
+  }
+
+  // ---------- Previous versions ----------
+  // Lists earlier saved values of the text and photos on THIS page. Restoring saves that old
+  // value as a new change, so it is itself kept in history and can be undone the same way.
+  async function readHistory() {
+    if (demo) return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]").reverse();
+    const { data, error } = await sb.from("site_content_history")
+      .select("id,key,value,changed_at").order("changed_at", { ascending: false }).limit(200);
+    if (error) throw error;
+    return data;
+  }
+
+  const describe = (v) => {
+    if (!v) return "(empty)";
+    const o = parseImg(v);
+    if (o) return "Photo: " + (o.alt || "no description");
+    return v.length > 120 ? v.slice(0, 120) + "…" : v;
+  };
+
+  async function toggleHistory() {
+    if (!historyBox.hidden) { historyBox.hidden = true; return; }
+    historyBox.hidden = false;
+    historyBox.textContent = "Loading…";
+    try {
+      const keys = new Set([...textEls.map((e) => e.dataset.edit), ...imgEls.map((f) => f.dataset.editImg)]);
+      // Skip entries that match what is shown now, and repeats of the same value.
+      const seen = new Set();
+      const items = (await readHistory()).filter((r) => {
+        const id = r.key + "\u0000" + r.value;
+        if (!keys.has(r.key) || r.value === original[r.key] || seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      }).slice(0, 15);
+      historyBox.textContent = "";
+      if (!items.length) { historyBox.textContent = "No earlier versions of anything on this page yet."; return; }
+      for (const r of items) {
+        const row = document.createElement("div");
+        row.className = "cms-history-row";
+        const text = document.createElement("span");
+        text.textContent = `${new Date(r.changed_at).toLocaleString()} · ${r.key}: ${describe(r.value)}`;
+        const b = mk("Restore", "cms-primary", async () => {
+          b.disabled = true;
+          try {
+            await writeContent([{ key: r.key, value: r.value }]);
+            apply({ ...original, [r.key]: r.value });
+            status.textContent = "Restored.";
+            historyBox.hidden = true;
+          } catch (err) {
+            console.error(err);
+            b.disabled = false;
+            status.textContent = "Couldn't restore. Check your connection and that you're still signed in.";
+          }
+        });
+        row.append(text, b);
+        historyBox.appendChild(row);
+      }
+    } catch (err) {
+      console.error(err);
+      historyBox.textContent = "Couldn't load earlier versions.";
+    }
   }
 
   function startEditing() {
@@ -278,7 +350,7 @@
       else if (member && member.roleError) {
         // Signed in, but the access check itself failed. Say so rather than hiding editing silently.
         bar.hidden = false;
-        editBtn.hidden = saveBtn.hidden = cancelBtn.hidden = true;
+        editBtn.hidden = saveBtn.hidden = cancelBtn.hidden = historyBtn.hidden = true;
         status.textContent = "Couldn't check your editor access.";
         bar.insertBefore(mk("Try again", "cms-primary", () => location.reload()), members);
       }

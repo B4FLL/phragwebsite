@@ -126,7 +126,7 @@ Emails can be typed in any capitalization. The sign-in link proves the person ow
 - Photos are shrunk and re-saved as JPEG, which also removes hidden location data from phone photos. Add a short description for each photo (it is read aloud to blind visitors).
 - Blank cards (experts, team members) and blank sources are hidden. To add one, fill in a blank. To remove one, clear its text.
 - Text is plain text only (no bold or links). Ask a developer if you need more.
-- Every save is also kept in the `site_content_history` table, so an old version can be recovered.
+- Every save is also kept in the `site_content_history` table. Press **Previous versions** in the bar (when not editing) to see earlier values of the text and photos on that page and **Restore** one. A restore is saved as a new change, so it can be undone the same way. The original text written in the HTML is not in the history, only values saved through the editor. No database change is needed.
 - The text inside the HTML files is just the starting default. Saved edits override it.
 
 

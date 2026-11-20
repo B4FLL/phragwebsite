@@ -62,6 +62,12 @@
           <button class="chip" type="button" data-guess="unsure">Not sure</button>
         </div>
 
+        <!-- Only shown to experts and editors. -->
+        <details id="hidden-panel" class="hidden-panel" hidden>
+          <summary>Hidden items (<span id="hidden-count">0</span>) <span class="small">moderators only</span></summary>
+          <div id="hidden-list"></div>
+        </details>
+
         <form id="post-form" class="composer" hidden>
           <h3>Share a photo</h3>
           <p class="small rules"><strong>Before you post:</strong> photograph plants from public land or your own property only. Keep people's faces, house numbers and license plates out of the photo (no photos of children), and post only photos you took. Not sure what the plant is? Check the <a href="identify.html">identification guide</a> and choose "Not sure". <a href="privacy.html">Full rules</a>.</p>

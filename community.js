@@ -130,6 +130,41 @@ const store = {
     if (imagePath && SAFE_PATH.test(imagePath)) await sb.storage.from(BUCKET).remove([imagePath]);
   },
 
+  // Moderators only: posts and comments that were hidden, so they can be put back.
+  async listHidden() {
+    if (demo) {
+      const posts = readDemo(DEMO_POSTS).filter((p) => p.status === "hidden")
+        .map((p) => ({ table: "posts", id: p.id, who: p.author_name, text: p.caption || "(no caption)", at: p.created_at, imageUrl: p.image_url }));
+      const comments = readDemo(DEMO_COMMENTS).filter((c) => c.status === "hidden")
+        .map((c) => ({ table: "comments", id: c.id, who: c.author_name, text: c.body, at: c.created_at }));
+      return [...posts, ...comments];
+    }
+    const [p, c] = await Promise.all([
+      sb.from("posts").select("id,author_name,caption,created_at,image_path").eq("status", "hidden").order("created_at", { ascending: false }).limit(50),
+      sb.from("comments").select("id,author_name,body,created_at").eq("status", "hidden").order("created_at", { ascending: false }).limit(50),
+    ]);
+    if (p.error) throw p.error;
+    if (c.error) throw c.error;
+    return [
+      ...p.data.map((x) => ({ table: "posts", id: x.id, who: x.author_name, text: x.caption || "(no caption)", at: x.created_at,
+        imageUrl: SAFE_PATH.test(x.image_path) ? publicUrl(x.image_path) : "" })),
+      ...c.data.map((x) => ({ table: "comments", id: x.id, who: x.author_name, text: x.body, at: x.created_at })),
+    ];
+  },
+
+  async restore(table, id) {
+    if (demo) {
+      const key = table === "posts" ? DEMO_POSTS : DEMO_COMMENTS;
+      const all = readDemo(key);
+      const row = all.find((r) => r.id === id);
+      if (row) row.status = "visible";
+      writeDemo(key, all);
+      return;
+    }
+    const { error } = await sb.from(table).update({ status: "visible", hidden_by: null }).eq("id", id);
+    if (error) throw error;
+  },
+
   // "Report this": is the flags table set up yet? (Lets the site be published before the database
   // script is run: the Report button just stays hidden until the table exists.)
   async flagsAvailable() {
@@ -347,6 +382,32 @@ async function reload() {
   }
   renderFeed();
   hashHandled = true;
+  await renderHidden();
+}
+
+// Experts and editors can see what was hidden and put it back (no database editing needed).
+async function renderHidden() {
+  const panel = $("hidden-panel");
+  const isMod = !!(me && (me.isExpert || me.isEditor));
+  panel.hidden = !isMod;
+  if (!isMod) return;
+  const list = $("hidden-list");
+  list.textContent = "Loading…";
+  let items;
+  try { items = await store.listHidden(); }
+  catch (e) { console.error(e); list.textContent = "Couldn't load hidden items."; return; }
+  $("hidden-count").textContent = items.length;
+  list.textContent = "";
+  if (!items.length) { list.append(h("p", { className: "small" }, "Nothing is hidden.")); return; }
+  for (const it of items) {
+    const row = h("div", { className: "hidden-item" });
+    if (it.imageUrl) row.append(h("img", { src: it.imageUrl, alt: "Hidden photo", loading: "lazy" }));
+    row.append(h("div", {},
+      h("p", {}, h("strong", {}, it.table === "posts" ? "Photo" : "Comment"), ` by ${it.who} · ${when(it.at)}`),
+      h("p", { className: "small" }, it.text)));
+    row.append(actionBtn("Restore", "", async () => { await store.restore(it.table, it.id); await reload(); }));
+    list.append(row);
+  }
 }
 
 $("new-btn").addEventListener("click", () => {

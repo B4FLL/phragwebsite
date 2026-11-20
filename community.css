@@ -14,7 +14,7 @@
 .composer select, .composer textarea { display: block; width: 100%; margin-top: 4px; padding: 8px; font: inherit; font-weight: 400; border: 1px solid #bdb8a5; border-radius: 6px; }
 .composer .button { border: 0; font: inherit; font-weight: 600; cursor: pointer; margin-top: 6px; }
 .preview { display: block; max-width: 100%; max-height: 260px; border-radius: 8px; margin: 8px 0; }
-.pick-map { height: 240px; border-radius: 8px; margin: 8px 0; }
+.pick-map { isolation: isolate; height: 240px; border-radius: 8px; margin: 8px 0; }
 
 .post { background: #fff; border-radius: var(--radius); box-shadow: 0 2px 10px rgba(0,0,0,.08); margin-bottom: 22px; overflow: hidden; }
 .post:target { outline: 3px solid var(--tan); }

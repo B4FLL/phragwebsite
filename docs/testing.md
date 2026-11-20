@@ -7,6 +7,7 @@ The site has no automated test suite. Changes are checked by hand or with one-of
 | Date | Fix | Evidence |
 |---|---|---|
 | 2026-11-19 | Mobile menu hidden behind the map | [evidence/mobile-menu-fix.md](evidence/mobile-menu-fix.md) |
+| 2026-11-19 | First batch of small features and bug fixes | [evidence/small-features.md](evidence/small-features.md) |
 
 Screenshots used by the evidence files are in [testing/](testing/). To add an entry, create `evidence/<fix-name>.md` and add a row above.
 

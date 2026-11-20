@@ -73,6 +73,16 @@ Until step 3 is done the map runs in **demo mode** (reports stay in your own bro
 
 Signed-in visitors see a **Report** button on other people's photos and comments and give a short reason (once per item). Moderators (experts and editors) see a red "⚑ Reported" line with the reasons under the item, and can press **Hide**. The button appears only after the database script in `supabase/community.sql` has been run (it includes the `flags` table), so re-run that file once after updating.
 
+## Map extras
+
+- **Remembered filters:** the map's checkboxes are restored the next time the same browser opens it.
+- **Copy link to this view:** gives a link that opens the map at the same position and zoom.
+- **Download shown records:** CSV or GeoJSON of the records that pass the current checkboxes, with a credit for each source. Community reports use the rounded public locations. GBIF and iNaturalist records are licensed per record, so credit them if the data is reused.
+
+## Hidden items
+
+On the Neighborhood page, experts and editors see a **Hidden items** panel listing hidden photos and comments, each with a **Restore** button. This replaces editing `status` in the Table Editor by hand. Restoring a comment whose photo is still hidden won't show it publicly until the photo is restored too. The photo feed also has filter chips (All, Looks invasive, Looks native, Not sure).
+
 ## Automatic jobs (GitHub Actions)
 
 Two jobs run on GitHub's servers with nobody online. Check them under the repository's **Actions** tab. To run one now: pick it, then **Run workflow**.

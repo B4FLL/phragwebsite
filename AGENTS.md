@@ -19,7 +19,7 @@ Static site (no bundler, no package.json) hosted on GitHub Pages, backed by Supa
 No linter, formatter, or type checker is configured. Match existing style: plain ES (IIFEs, `async/await`), two-space indent, double quotes, explanatory header comments. Store only location, date, taxon and link for observation data (no photos or usernames). Plain-text editing only in CMS fields. Photos are re-encoded client-side to strip EXIF.
 
 ## Testing Guidelines
-There is no automated test suite. Verify changes manually in a local server, in both demo mode (empty `config.js` values) and connected mode.
+There is no automated test suite. Verify changes manually in a local server, in both demo mode (empty `config.js` values) and connected mode. For layout bugs, `tests/mobile-menu.check.js` is a Playwright phone-width check; see `docs/testing.md` for results and how to run it.
 
 ## Commit & Pull Request Guidelines
 History uses short, imperative, capitalized subjects without prefixes (e.g. "Fix community views: compute expert tag inline so visitors can read them"). Work is committed directly to `main`; there is no PR template. Update `README.md` when behavior, setup steps or SQL files change.

@@ -8,6 +8,7 @@ Website and Utah tracking map for our FIRST LEGO League innovation project on in
 - `map.html`, `map.js`, `map.css` – Utah map, report form, expert verification
 - `identify.html` – guide to telling invasive from native Phragmites
 - `login.html`, `login.js` – member sign-in (email link)
+- `signin-bar.js` – the "Sign in or sign up" bar shown under the header to signed-out visitors
 - `auth.js` – shared sign-in code; `cms.js` – lets members edit text and photos on the page
 - `supabase/cms.sql` – tables and rules for editable content and photos
 - `supabase/members.sql` – approved-email list for editors and experts

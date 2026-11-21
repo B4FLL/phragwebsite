@@ -1,12 +1,15 @@
 // "Sign in or sign up" bar under the site header, shown to visitors who are signed out.
 // Entering an email sends the same sign-in link as the Members page (Supabase creates the
 // account the first time, so there is no separate sign-up). Needs auth.js loaded first.
-// The bar can be closed for the rest of the visit. It never shows on the Members page.
+// The bar can be closed, and stays closed in that browser for 30 days. A "Sign in" item in the
+// menu (shown only while the bar is closed) brings it back. It never shows on the Members page.
 (function () {
   const { demo, sb, getMember } = window.phrag;
   const header = document.querySelector(".site-header");
   if (!header || /login\.html$/.test(location.pathname)) return;
-  try { if (sessionStorage.getItem("phragBarClosed") === "1") return; } catch (e) { /* storage blocked */ }
+  const CLOSED_KEY = "phragBarClosedUntil";
+  let closed = false;
+  try { closed = Number(localStorage.getItem(CLOSED_KEY)) > Date.now(); } catch (e) { /* storage blocked */ }
 
   const RESEND_SECONDS = 60;
   const bar = document.createElement("div");
@@ -67,12 +70,32 @@
   const syncHeight = () => document.documentElement.style.setProperty("--bar-h", bar.hidden ? "0px" : bar.offsetHeight + "px");
   new ResizeObserver(syncHeight).observe(bar);
 
-  function dismiss() {
-    bar.hidden = true;
+  // "Sign in" item at the end of the menu; only visible while the bar is closed and nobody is signed in.
+  const nav = header.querySelector(".site-nav");
+  const reopen = document.createElement("button");
+  reopen.type = "button"; reopen.className = "nav-signin"; reopen.textContent = "Sign in"; reopen.hidden = true;
+  if (nav) nav.appendChild(reopen);
+  let signedIn = false;
+  function update() {
+    bar.hidden = signedIn || closed;
+    reopen.hidden = signedIn || !closed;
     syncHeight();
-    try { sessionStorage.setItem("phragBarClosed", "1"); } catch (e) { /* storage blocked */ }
   }
-  close.addEventListener("click", dismiss);
+
+  close.addEventListener("click", () => {
+    closed = true;
+    try { localStorage.setItem(CLOSED_KEY, String(Date.now() + 30 * 24 * 60 * 60 * 1000)); } catch (e) { /* storage blocked */ }
+    update();
+  });
+  reopen.addEventListener("click", () => {
+    closed = false;
+    try { localStorage.removeItem(CLOSED_KEY); } catch (e) { /* storage blocked */ }
+    if (nav) nav.classList.remove("open");
+    const toggle = header.querySelector(".nav-toggle");
+    if (toggle) toggle.setAttribute("aria-expanded", "false");
+    update();
+    input.focus();
+  });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -103,8 +126,8 @@
   async function refresh() {
     let member = null;
     try { member = await getMember(); } catch (e) { /* treat as signed out */ }
-    bar.hidden = !!member;
-    syncHeight();
+    signedIn = !!member;
+    update();
   }
   if (sb) sb.auth.onAuthStateChange((event) => {
     if (event === "SIGNED_IN" || event === "SIGNED_OUT") setTimeout(refresh, 0);

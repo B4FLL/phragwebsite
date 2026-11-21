@@ -130,6 +130,8 @@ async function makeJpeg(page) {
 
     // Hash jump happens once, not on every redraw.
     const ids = await page.evaluate(() => JSON.parse(localStorage.getItem("phragPosts")).map((p) => p.id));
+    // The site scrolls smoothly; switch that off so the measurements below aren't taken mid-animation.
+    await page.addStyleTag({ content: "html { scroll-behavior: auto !important; }" });
     await page.goto(`${URL}/community.html#post-${ids[0]}`);
     await page.waitForSelector(".post");
     await page.waitForTimeout(300);

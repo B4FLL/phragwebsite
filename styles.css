@@ -58,7 +58,9 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 24px;
   min-height: 60px;
+  max-width: 1200px;   /* wider than the page text so ten links fit on one line */
 }
 
 .logo {
@@ -66,17 +68,19 @@ a {
   font-weight: 700;
   text-decoration: none;
   font-size: 1.1rem;
+  white-space: nowrap;
 }
 
 .site-nav {
   display: flex;
-  gap: 20px;
+  gap: 18px;
 }
 
 .site-nav a {
   color: #e6efe8;
   text-decoration: none;
   font-size: 0.95rem;
+  white-space: nowrap;
 }
 
 .site-nav a:hover {
@@ -184,8 +188,8 @@ a {
   font-size: 0.9rem;
 }
 
-/* Mobile */
-@media (max-width: 760px) {
+/* Menu button instead of the link row when the links no longer fit on one line */
+@media (max-width: 1100px) {
   .nav-toggle {
     display: block;
   }

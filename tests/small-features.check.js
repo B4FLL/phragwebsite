@@ -135,7 +135,8 @@ async function makeJpeg(page) {
     await page.waitForTimeout(300);
     const jumped = await page.evaluate(() => scrollY);
     await page.evaluate(() => scrollTo(0, 0));
-    await page.click('[data-guess="all"]');
+    // Click from script: Playwright's own click would scroll the chip into view and hide the result.
+    await page.evaluate(() => document.querySelector('[data-guess="all"]').click());
     await page.waitForTimeout(200);
     const after = await page.evaluate(() => scrollY);
     check("Page opens at the linked post, then stays put when the feed redraws", jumped > 0 && after === 0, `first ${jumped}px, after redraw ${after}px`);

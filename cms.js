@@ -1,6 +1,8 @@
 // Member-editable content.
 //   <p data-edit="some-key">   plain text anyone can read; members can edit it
 //   <figure data-edit-img="some-key"><img alt=""></figure>   a photo members can replace
+//   <li hidden><a data-edit-url="some-key">Name</a></li>   a link whose web address members can set
+//     (the item stays hidden from visitors until an https:// address is saved)
 // Everyone sees saved edits. Signed-in editors also get an "Edit page" bar.
 // Text is always written with textContent, never as HTML, so edits can't inject markup.
 (function () {
@@ -10,14 +12,18 @@
   const BUCKET = "site-images";
   const textEls = [...document.querySelectorAll("[data-edit]")];
   const imgEls = [...document.querySelectorAll("[data-edit-img]")];
-  if (!textEls.length && !imgEls.length) return;
+  const urlEls = [...document.querySelectorAll("[data-edit-url]")];
+  if (!textEls.length && !imgEls.length && !urlEls.length) return;
 
   const original = {};      // key -> last saved value (text, or JSON string for photos)
   const pending = {};       // photo key -> { blob, alt } to upload, or null to remove
+  const pendingUrls = {};   // link key -> new web address ("" removes it)
   let editing = false;
 
   const norm = (s) => s.replace(/\s+/g, " ").trim();
   const parseImg = (v) => { try { const o = JSON.parse(v); return o && o.url ? o : null; } catch (e) { return null; } };
+  // Only plain https:// addresses are accepted for links, so nobody can save a javascript: link.
+  const safeLink = (u) => typeof u === "string" && /^https:\/\/[^\s<>"']{3,500}$/i.test(u);
   const safeUrl = (u) =>
     typeof u === "string" &&
     (u.startsWith("data:image/") ||
@@ -48,6 +54,10 @@
     document.querySelectorAll("li[data-edit]").forEach((li) => {
       li.hidden = !editing && !li.textContent.trim();
     });
+    for (const a of urlEls) {
+      const li = a.closest("li") || a;
+      li.hidden = !editing && !safeLink(a.getAttribute("href"));
+    }
     document.querySelectorAll(".card[data-optional]").forEach((card) => {
       const any = [...card.querySelectorAll("[data-edit]")].some((e) => e.textContent.trim());
       card.hidden = !editing && !any;
@@ -64,6 +74,11 @@
       const key = fig.dataset.editImg;
       original[key] = content[key] || "";
       showImage(fig, parseImg(original[key]));
+    }
+    for (const a of urlEls) {
+      const key = a.dataset.editUrl;
+      original[key] = safeLink(content[key]) ? content[key] : "";
+      if (original[key]) a.href = original[key]; else a.removeAttribute("href");
     }
     hideEmpty();
   }
@@ -175,7 +190,7 @@
     historyBox.hidden = false;
     historyBox.textContent = "Loading…";
     try {
-      const keys = new Set([...textEls.map((e) => e.dataset.edit), ...imgEls.map((f) => f.dataset.editImg)]);
+      const keys = new Set([...textEls.map((e) => e.dataset.edit), ...imgEls.map((f) => f.dataset.editImg), ...urlEls.map((a) => a.dataset.editUrl)]);
       // Skip entries that match what is shown now, and repeats of the same value.
       const seen = new Set();
       const items = (await readHistory()).filter((r) => {
@@ -226,8 +241,9 @@
       }
       fig.tabIndex = 0;
     }
+    for (const a of urlEls) { a.tabIndex = 0; a.title = "Click to set the web address"; }
     hideEmpty();
-    status.textContent = "Click any dashed text to edit it, or a photo box to add a photo.";
+    status.textContent = "Click any dashed text to edit it, a photo box to add a photo, or a social link name to set its address.";
     setBar();
     window.addEventListener("beforeunload", warnUnsaved);
   }
@@ -237,13 +253,15 @@
     document.body.classList.remove("editing");
     for (const el of textEls) el.removeAttribute("contenteditable");
     for (const k of Object.keys(pending)) delete pending[k];
+    for (const k of Object.keys(pendingUrls)) delete pendingUrls[k];
+    for (const a of urlEls) { a.removeAttribute("tabindex"); a.removeAttribute("title"); }
     window.removeEventListener("beforeunload", warnUnsaved);
     hideEmpty();
     setBar();
   }
 
   function isDirty() {
-    return Object.keys(pending).length > 0 ||
+    return Object.keys(pending).length > 0 || Object.keys(pendingUrls).length > 0 ||
       textEls.some((el) => norm(el.textContent) !== original[el.dataset.edit]);
   }
   function warnUnsaved(e) { if (isDirty()) { e.preventDefault(); e.returnValue = ""; } }
@@ -269,6 +287,7 @@
         const url = await uploadImage(key, p.blob);
         rows.push({ key, value: JSON.stringify({ url, alt: p.alt }) });
       }
+      for (const [key, value] of Object.entries(pendingUrls)) rows.push({ key, value });
       if (rows.length) await writeContent(rows);
       const saved = Object.fromEntries(Object.entries(original));
       rows.forEach((r) => (saved[r.key] = r.value));
@@ -322,6 +341,23 @@
     fig.addEventListener("keydown", (e) => {
       if (editing && e.target === fig && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pickPhoto(fig); }
     });
+  }
+
+  // Links: while editing, clicking one asks for its web address instead of following it.
+  function editLink(a) {
+    const key = a.dataset.editUrl;
+    const now = key in pendingUrls ? pendingUrls[key] : original[key];
+    const v = prompt(`Web address for ${a.textContent} (starts with https://). Leave empty to hide this link:`, now || "https://");
+    if (v === null) return;
+    const url = v.trim();
+    if (url && !safeLink(url)) { status.textContent = "That address must start with https:// and have no spaces."; return; }
+    if (url === original[key]) delete pendingUrls[key]; else pendingUrls[key] = url;
+    if (url) a.href = url; else a.removeAttribute("href");
+    status.textContent = "Press Save changes to publish the link.";
+  }
+  for (const a of urlEls) {
+    a.addEventListener("click", (e) => { if (editing) { e.preventDefault(); editLink(a); } });
+    a.addEventListener("keydown", (e) => { if (editing && e.key === "Enter") { e.preventDefault(); editLink(a); } });
   }
 
   // Keep every text slot to plain text on one paragraph.

@@ -279,3 +279,13 @@ body.editing { padding-bottom: 80px; }
 .site-nav .nav-signin { background: none; border: 0; padding: 0; color: var(--tan); font: inherit; font-size: 0.95rem; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .site-nav .nav-signin[hidden] { display: none; }
 @media (max-width: 1180px) { .site-nav .nav-signin { padding: 10px 0; text-align: left; } }
+
+/* Expert photos on the Experts cards */
+.expert-photo { margin: 0 0 12px; }
+.expert-photo img { width: 96px; height: 96px; object-fit: cover; border-radius: 50%; }
+
+/* Social links in the footer */
+.social { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; margin: 8px 0 0; padding: 0; }
+.social li[hidden] { display: none; }
+.social a { color: inherit; font-weight: 600; }
+.editing .social a { outline: 2px dashed var(--tan); outline-offset: 3px; cursor: pointer; }

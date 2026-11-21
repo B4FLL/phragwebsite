@@ -43,10 +43,47 @@
         <label class="filter"><input type="checkbox" data-layer="unspecified" checked> <span class="dot unspecified"></span> Not identified to subspecies</label>
         <label class="filter"><input type="checkbox" data-layer="unsure" checked> <span class="dot unsure"></span> Community report, unsure</label>
         <label class="filter"><input type="checkbox" id="show-photos" checked> <span class="dot photo"></span> Neighbor photos (<a href="community.html">see all</a>)</label>
+        <label class="filter"><input type="checkbox" id="show-herds" checked> <span class="dot herd"></span> Cow herds</label>
+        <label class="filter"><input type="checkbox" id="show-range" checked> <span class="ring"></span> Grazing range (2 km around each herd)</label>
         <label class="filter"><input type="checkbox" id="show-old" checked> Include records older than 5 years (shown faded)</label>
         <p class="small">Small dots are public records from <a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist</a> and <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF</a> (museums, herbaria). Large dots are reports from this site; a solid outline means an expert verified it.</p>
         <p class="small"><a href="privacy.html">Privacy &amp; community rules</a></p>
         <p class="disclaimer"><strong>Data age:</strong> sightings can be years old. Phragmites may have spread, died back, or been treated since, and some sites were surveyed only once (for example a batch of records from 2009). Treat faded dots as leads to re-check, not current conditions. Not every patch is recorded, and no dot here is a confirmed location of invasive Phragmites unless an expert verified it.</p>
+      </section>
+
+      <section id="herd-panel">
+        <h3>Cow herds</h3>
+        <p class="small">Herds our digital herding project is tracking. The number is how many invasive Phragmites records lie within 2 km of the herd, which is roughly what it can graze.</p>
+        <div id="herd-list" class="herd-list">Loading…</div>
+        <!-- Only shown to signed-in editors and experts. -->
+        <div id="herd-admin" hidden>
+          <button id="herd-btn" class="button small-btn" type="button">Add a herd</button>
+          <form id="herd-form" hidden>
+            <p id="herd-pick-info" class="small"></p>
+            <label>Herd name
+              <input type="text" name="name" maxlength="80" required>
+            </label>
+            <label>Number of cows (optional)
+              <input type="number" name="head_count" min="1" max="10000" inputmode="numeric">
+            </label>
+            <label>What are they doing?
+              <select name="activity" required>
+                <option value="grazing">Grazing</option>
+                <option value="moving">Being moved</option>
+                <option value="resting">Resting</option>
+              </select>
+            </label>
+            <label>Date seen
+              <input type="date" name="seen_on" required>
+            </label>
+            <label>Notes (optional)
+              <textarea name="note" rows="2" maxlength="500"></textarea>
+            </label>
+            <button class="button small-btn" type="submit">Save herd</button>
+            <button class="link-btn" type="button" id="herd-cancel">Cancel</button>
+            <p id="herd-msg" class="small" role="status"></p>
+          </form>
+        </div>
       </section>
 
       <section>

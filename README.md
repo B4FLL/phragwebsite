@@ -14,6 +14,7 @@ Website and Utah tracking map for our FIRST LEGO League innovation project on in
 - `supabase/members.sql` – approved-email list for editors and experts
 - `community.html`, `community.js`, `community.css` – Neighborhood photo feed with comments and expert tags
 - `supabase/community.sql` – tables, privacy rules and photo storage for the Neighborhood feed
+- `supabase/herds.sql` – the cow herds table for the map (run it after `members.sql`)
 - `privacy.html` – privacy notice and community rules
 - `docs/system-flow.html` – open in a browser: diagrams of how the whole system works (pages, database, who can do what)
 - `.github/workflows/` – the two automatic jobs (data refresh, database keep-alive)
@@ -44,7 +45,7 @@ In PowerShell, any static server works; VS Code's "Live Server" extension is the
 GitHub Pages only serves static files, so community reports are stored in Supabase (free tier).
 
 1. Make a project at supabase.com.
-2. **SQL Editor**: paste and run `supabase/schema.sql`, then run `supabase/cms.sql` as a second query, then `supabase/members.sql` as a third, then `supabase/community.sql` as a fourth.
+2. **SQL Editor**: paste and run `supabase/schema.sql`, then run `supabase/cms.sql` as a second query, then `supabase/members.sql` as a third, then `supabase/community.sql` as a fourth, then `supabase/herds.sql` as a fifth (cow herds on the map).
 3. **Project Settings > API**: copy the Project URL and the `anon` public key into `config.js`.
 4. **Authentication > URL Configuration**: set Site URL to your GitHub Pages address.
 5. Add members (see "Members and editing" below).
@@ -73,6 +74,21 @@ Until step 3 is done the map runs in **demo mode** (reports stay in your own bro
 ## Reporting problem photos and comments
 
 Signed-in visitors see a **Report** button on other people's photos and comments and give a short reason (once per item). Moderators (experts and editors) see a red "⚑ Reported" line with the reasons under the item, and can press **Hide**. The button appears only after the database script in `supabase/community.sql` has been run (it includes the `flags` table), so re-run that file once after updating.
+
+## Cow herds (digital herding)
+
+The map shows where our herds are and how they relate to Phragmites.
+
+- **Cow herds layer:** each herd is a cow marker with a dashed ring (2 km, roughly how far it can graze). Tick or untick "Cow herds" and "Grazing range" in **Show on map**. The choice is remembered.
+- **Connection to Phragmites:** each herd's popup and its entry in the **Cow herds** panel say how many invasive Phragmites records lie within 2 km, or how far away the nearest one is. The count uses the records currently loaded (iNaturalist, GBIF and community reports).
+- **Adding herds:** signed-in editors and experts see **Add a herd** in the panel: name, number of cows, activity, date and notes, then click the map for the spot. They can also **Remove herd** from a herd's popup. Everyone else can only look. This needs `supabase/herds.sql` to be run once; until then the herd list says it couldn't load. In demo mode herds stay in the browser.
+- **Legend:** the box over the map explains every color and shape. It starts closed on phones.
+- **Herd locations are shown exactly as entered.** Put the herd where the grazing area is, not at a private home or corral.
+
+## Experts' photos and social links
+
+- Each card in **Experts We Talked To** has a photo box. Editors add a photo with **Edit page**, same as other photos. Empty boxes are hidden from visitors.
+- The footer has social links (Instagram, Facebook, YouTube, TikTok). Editors press **Edit page**, click a name, and type the https:// address. Links with no address stay hidden. Only https:// addresses are accepted. These links appear on the home, identify, privacy, Neighborhood and Members pages.
 
 ## Map extras
 

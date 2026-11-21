@@ -47,6 +47,35 @@ const store = {
   },
 };
 
+// Cow herds (team-entered). Real mode: the cow_herds table (supabase/herds.sql). Demo mode: this browser only.
+const HERD_KEY = "phragHerds";
+const herdStore = {
+  async list() {
+    if (demo) return JSON.parse(localStorage.getItem(HERD_KEY) || "[]");
+    const { data, error } = await sb.from("cow_herds").select("*").order("created_at");
+    if (error) throw error;
+    return data;
+  },
+  async add(h) {
+    if (demo) {
+      const all = JSON.parse(localStorage.getItem(HERD_KEY) || "[]");
+      all.push({ ...h, id: "demo-herd-" + Date.now() });
+      localStorage.setItem(HERD_KEY, JSON.stringify(all));
+      return;
+    }
+    const { error } = await sb.from("cow_herds").insert(h);
+    if (error) throw error;
+  },
+  async remove(id) {
+    if (demo) {
+      localStorage.setItem(HERD_KEY, JSON.stringify(JSON.parse(localStorage.getItem(HERD_KEY) || "[]").filter((x) => x.id !== id)));
+      return;
+    }
+    const { error } = await sb.from("cow_herds").delete().eq("id", id);
+    if (error) throw error;
+  },
+};
+
 // ---------- Map ----------
 // leaflet-rotate adds bearing support; touchRotate lets phones twist with two fingers.
 const map = L.map("map", { rotate: true, bearing: 0, touchRotate: true, rotateControl: false }).setView([39.3, -111.6], 7);
@@ -225,7 +254,7 @@ function applyFilters() {
 
 // Remember the checkboxes between visits (this browser only).
 const FILTER_KEY = "phragFilters";
-const filterBoxes = () => document.querySelectorAll("[data-layer], #show-old, #show-photos");
+const filterBoxes = () => document.querySelectorAll("[data-layer], #show-old, #show-photos, #show-herds, #show-range");
 function saveFilters() {
   try {
     const o = {};
@@ -400,15 +429,220 @@ async function load() {
   let photoCount = 0;
   try { photoCount = await addPhotoPins(); } catch (e) { console.error(e); }
   applyFilters();
+  const herdCount = await refreshHerds(); // after the records load, so each herd can count the Phragmites near it
   const oldCount = markers.filter((x) => x.old).length;
   $("stats").textContent =
     `${publicCount.toLocaleString()} public records from ${notes.join(", ")} + ${reportCount} community report${reportCount === 1 ? "" : "s"}` +
     (photoCount ? ` + ${photoCount} neighbor photo${photoCount === 1 ? "" : "s"}` : "") +
+    (herdCount ? ` + ${herdCount} cow herd${herdCount === 1 ? "" : "s"}` : "") +
     `. ${oldCount.toLocaleString()} records are older than ${OLD_YEARS} years.`;
 }
 
 document.querySelectorAll("[data-layer], #show-old").forEach((box) => box.addEventListener("change", () => { applyFilters(); saveFilters(); }));
 $("show-photos").addEventListener("change", (e) => { (e.target.checked ? photoLayer.addTo(map) : map.removeLayer(photoLayer)); saveFilters(); });
+
+// ---------- Cow herds ----------
+// Herds are drawn as cow markers with a dashed ring showing roughly how far they can graze.
+// Each herd is tied to Phragmites by counting the invasive records inside that ring.
+const RANGE_KM = 2;
+const ACTIVITY = { grazing: "Grazing", moving: "Being moved", resting: "Resting" };
+const herdLayer = L.layerGroup().addTo(map);
+const rangeLayer = L.layerGroup().addTo(map);
+let canManageHerds = false;
+
+function distanceKm(aLat, aLng, bLat, bLng) {
+  const t = Math.PI / 180, dLat = (bLat - aLat) * t, dLng = (bLng - aLng) * t;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(aLat * t) * Math.cos(bLat * t) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+
+// How much invasive Phragmites a herd can reach: records inside the range, and the closest one.
+function herdReach(h) {
+  let inRange = 0, nearest = Infinity;
+  for (const { cat, rec } of markers) {
+    if (cat !== "invasive") continue;
+    const d = distanceKm(h.lat, h.lng, rec.lat, rec.lng);
+    if (d <= RANGE_KM) inRange++;
+    if (d < nearest) nearest = d;
+  }
+  return { inRange, nearest };
+}
+const reachText = (r) => r.inRange
+  ? `${r.inRange.toLocaleString()} invasive Phragmites record${r.inRange === 1 ? "" : "s"} within ${RANGE_KM} km`
+  : r.nearest === Infinity ? "No invasive Phragmites records on the map yet"
+  : `No invasive Phragmites within ${RANGE_KM} km (nearest is ${r.nearest.toFixed(1)} km away)`;
+
+function applyHerdVisibility() {
+  const on = $("show-herds").checked;
+  on ? herdLayer.addTo(map) : map.removeLayer(herdLayer);
+  on && $("show-range").checked ? rangeLayer.addTo(map) : map.removeLayer(rangeLayer);
+}
+
+async function refreshHerds() {
+  const list = $("herd-list");
+  let herds = [];
+  try { herds = await herdStore.list(); }
+  catch (e) {
+    console.error(e);
+    list.textContent = "Couldn't load the herds.";
+    return 0;
+  }
+  // Clear only now (after the fetch), so two refreshes running at once can't draw the herds twice.
+  herdLayer.clearLayers();
+  rangeLayer.clearLayers();
+  list.textContent = herds.length ? "" : "No herds have been added yet.";
+  for (const h of herds) {
+    const reach = herdReach(h);
+    const icon = L.divIcon({ className: "herd-icon", html: "🐄", iconSize: [30, 30], iconAnchor: [15, 15] });
+    const m = L.marker([h.lat, h.lng], { icon, title: h.name, keyboard: true });
+    const el = document.createElement("div");
+    el.className = "popup";
+    const title = document.createElement("h4");
+    title.textContent = "Cow herd: " + h.name;
+    el.appendChild(title);
+    if (h.head_count) row(el, "Cows", String(h.head_count));
+    row(el, "Activity", ACTIVITY[h.activity] || h.activity);
+    row(el, "Seen", h.seen_on);
+    if (h.note) row(el, "Notes", h.note);
+    const link = document.createElement("p");
+    link.className = "reach";
+    link.textContent = reachText(reach);
+    el.append(link, googleLink(h.lat, h.lng));
+    if (canManageHerds) el.append(document.createTextNode(" · "), removeHerdButton(h));
+    m.bindPopup(el);
+    m.addTo(herdLayer);
+    L.circle([h.lat, h.lng], { radius: RANGE_KM * 1000, color: "#7a4a21", weight: 1.5, dashArray: "6 5", fillColor: "#7a4a21", fillOpacity: 0.08, interactive: false }).addTo(rangeLayer);
+
+    const item = document.createElement("div");
+    item.className = "herd-item";
+    const name = document.createElement("strong");
+    name.textContent = h.name + (h.head_count ? ` (${h.head_count} cows)` : "");
+    const detail = document.createElement("p");
+    detail.textContent = `${ACTIVITY[h.activity] || h.activity}, seen ${h.seen_on}`;
+    const reachP = document.createElement("p");
+    reachP.className = "reach";
+    reachP.textContent = reachText(reach);
+    const show = document.createElement("button");
+    show.type = "button"; show.className = "link-btn"; show.textContent = "Show on map";
+    show.addEventListener("click", () => { map.setView([h.lat, h.lng], 13); m.openPopup(); });
+    item.append(name, detail, reachP, show);
+    list.appendChild(item);
+  }
+  applyHerdVisibility();
+  return herds.length;
+}
+
+function removeHerdButton(h) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "link-btn"; b.textContent = "Remove herd";
+  b.addEventListener("click", async () => {
+    if (!confirm(`Remove the herd "${h.name}" from the map?`)) return;
+    b.disabled = true;
+    try { await herdStore.remove(h.id); await refreshHerds(); }
+    catch (err) { console.error(err); b.disabled = false; showHint("Couldn't remove the herd. Check you're still signed in."); }
+  });
+  return b;
+}
+
+$("show-herds").addEventListener("change", () => { applyHerdVisibility(); saveFilters(); });
+$("show-range").addEventListener("change", () => { applyHerdVisibility(); saveFilters(); });
+
+// Add-a-herd form (editors and experts only; the section stays hidden for everyone else).
+const herdForm = $("herd-form");
+let herdPin = null;
+const inUtah = ({ lat, lng }) => lat >= 36.9 && lat <= 42.1 && lng >= -114.1 && lng <= -108.9;
+
+function setHerdPin(latlng) {
+  if (!inUtah(latlng)) { $("herd-pick-info").textContent = "That spot is outside Utah. Pick a location inside Utah."; return; }
+  if (herdPin) herdPin.setLatLng(latlng);
+  else {
+    herdPin = L.marker(latlng, { draggable: true }).addTo(map);
+    herdPin.on("dragend", () => setHerdPin(herdPin.getLatLng()));
+  }
+  $("herd-pick-info").textContent = `Herd at ${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}. Drag the pin to adjust.`;
+}
+const onHerdMapClick = (e) => setHerdPin(e.latlng);
+function closeHerdForm() {
+  herdForm.hidden = true;
+  $("herd-btn").hidden = false;
+  if (herdPin) { map.removeLayer(herdPin); herdPin = null; }
+  map.off("click", onHerdMapClick);
+}
+$("herd-btn").addEventListener("click", () => {
+  closeForm(); // only one pin form open at a time
+  herdForm.hidden = false;
+  $("herd-btn").hidden = true;
+  $("herd-msg").textContent = "";
+  $("herd-pick-info").textContent = "Click the map to place the herd.";
+  herdForm.seen_on.value = new Date().toISOString().slice(0, 10);
+  herdForm.seen_on.max = herdForm.seen_on.value;
+  map.on("click", onHerdMapClick);
+});
+$("herd-cancel").addEventListener("click", closeHerdForm);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !herdForm.hidden) closeHerdForm(); });
+
+herdForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!herdPin) { $("herd-msg").textContent = "Place the herd on the map first."; return; }
+  const { lat, lng } = herdPin.getLatLng();
+  const count = herdForm.head_count.value.trim();
+  const herd = {
+    name: herdForm.name.value.trim(),
+    lat, lng,
+    head_count: count ? Math.max(1, Math.min(10000, parseInt(count, 10) || 1)) : null,
+    activity: herdForm.activity.value,
+    seen_on: herdForm.seen_on.value,
+    note: herdForm.note.value.trim() || null,
+  };
+  if (!herd.name) { $("herd-msg").textContent = "Give the herd a name."; return; }
+  try {
+    await herdStore.add(herd);
+    herdForm.reset();
+    closeHerdForm();
+    await refreshHerds();
+    map.setView([lat, lng], Math.max(map.getZoom(), 11));
+  } catch (err) {
+    console.error(err);
+    $("herd-msg").textContent = "Couldn't save the herd. Check you're signed in as an editor or expert, then try again.";
+  }
+});
+
+// ---------- Legend ----------
+// What every color and shape on the map means. Collapsed on phones so it doesn't cover the map.
+L.Control.Legend = L.Control.extend({
+  options: { position: "bottomleft" },
+  onAdd() {
+    const box = L.DomUtil.create("details", "map-legend");
+    box.open = !window.matchMedia("(max-width: 760px)").matches;
+    const title = L.DomUtil.create("summary", "", box);
+    title.textContent = "Legend";
+    const list = L.DomUtil.create("ul", "", box);
+    const items = [
+      [{ background: COLORS.invasive }, "Invasive Phragmites"],
+      [{ background: COLORS.native }, "Native Phragmites"],
+      [{ background: COLORS.unspecified }, "Not identified to subspecies"],
+      [{ background: COLORS.unsure }, "Community report, unsure"],
+      [{ background: COLORS.invasive }, "Small dot: public record (iNaturalist, GBIF)", "small"],
+      ["verified", "Large dot, solid ring: expert verified"],
+      ["unverified", "Large dot, dashed ring: not yet verified"],
+      ["faded", `Faded: older than ${OLD_YEARS} years`],
+      [{ background: "#6b3fa0" }, "Neighbor photo"],
+      ["herd", "Cow herd", "", "🐄"],
+      ["range", `Grazing range (${RANGE_KM} km)`],
+    ];
+    for (const [look, text, extra, glyph] of items) {
+      const li = L.DomUtil.create("li", "", list);
+      const sw = L.DomUtil.create("span", "sw " + (typeof look === "string" ? look : "") + (extra ? " " + extra : ""), li);
+      if (typeof look === "object") Object.assign(sw.style, look);
+      if (glyph) sw.textContent = glyph;
+      li.append(document.createTextNode(text));
+    }
+    L.DomEvent.disableClickPropagation(box);
+    L.DomEvent.disableScrollPropagation(box);
+    return box;
+  },
+});
+new L.Control.Legend().addTo(map);
 
 // ---------- Share and download ----------
 $("copy-link").addEventListener("click", async () => {
@@ -502,6 +736,7 @@ function closeForm() {
 function onMapClick(e) { setPin(e.latlng); }
 
 $("pick-btn").addEventListener("click", () => {
+  closeHerdForm(); // only one pin form open at a time
   form.hidden = false;
   $("pick-btn").hidden = true;
   $("form-msg").textContent = "";
@@ -601,6 +836,11 @@ async function renderQueue() {
 (async function showExpertQueue() {
   try {
     const member = await getMember();
+    if (member && (member.isEditor || member.isExpert)) {
+      canManageHerds = true;
+      $("herd-admin").hidden = false;
+      refreshHerds(); // redraw so the popups get their Remove button
+    }
     if (!member || !member.isExpert) return;
     $("expert-section").hidden = false;
     $("expert-email").textContent = member.email;

@@ -86,7 +86,15 @@
   </main>
 
   <footer class="site-footer">
-    <div class="container"><p>&copy; <span id="year"></span> Phragmites Project · FIRST LEGO League · <a href="privacy.html">Privacy &amp; community rules</a></p></div>
+    <div class="container"><p>&copy; <span id="year"></span> Phragmites Project · FIRST LEGO League · <a href="privacy.html">Privacy &amp; community rules</a></p>
+      <ul class="social" aria-label="Our social media">
+        <!-- Editors set each address on the page itself (Edit page, then click the name). Links with no address stay hidden. -->
+        <li hidden><a data-edit-url="social-instagram" target="_blank" rel="noopener">Instagram</a></li>
+        <li hidden><a data-edit-url="social-facebook" target="_blank" rel="noopener">Facebook</a></li>
+        <li hidden><a data-edit-url="social-youtube" target="_blank" rel="noopener">YouTube</a></li>
+        <li hidden><a data-edit-url="social-tiktok" target="_blank" rel="noopener">TikTok</a></li>
+      </ul>
+    </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>

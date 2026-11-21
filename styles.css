@@ -267,3 +267,6 @@ body.editing { padding-bottom: 80px; }
 .signin-bar form button { padding: 7px 14px; border: 0; border-radius: 6px; background: var(--green-dark); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
 .signin-bar form button:disabled { opacity: 0.6; cursor: wait; }
 .signin-close { position: absolute; top: 4px; right: 8px; border: 0; background: none; color: var(--green-dark); font-size: 1.5rem; line-height: 1; cursor: pointer; padding: 4px 8px; }
+.signin-tabs { display: flex; gap: 4px; flex-basis: 100%; }
+.signin-tabs button { padding: 5px 12px; border: 1px solid var(--green-dark); border-radius: 999px; background: transparent; color: var(--green-dark); font: inherit; font-size: 0.85rem; cursor: pointer; }
+.signin-tabs button[aria-selected="true"] { background: var(--green-dark); color: #fff; }

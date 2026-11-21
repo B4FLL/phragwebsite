@@ -15,9 +15,36 @@
   bar.setAttribute("role", "region");
   bar.setAttribute("aria-label", "Sign in");
 
+  // The tab is only a label for what the person expects. Real access always comes from their
+  // email's row in member_emails; the choice is remembered so the Members page can say so if
+  // the email doesn't have the role they picked.
+  const KINDS = [
+    { id: "community", tab: "Community", text: "Sign in or sign up to share photos and comment", back: false },
+    { id: "member", tab: "Team member", text: "Team member sign-in: use the email the admin added, to edit the site", back: true },
+    { id: "expert", tab: "Expert", text: "Expert sign-in: use the email the admin added, to verify map reports", back: true },
+  ];
+  let kind = KINDS[0];
+  const tabs = document.createElement("div");
+  tabs.className = "signin-tabs";
+  tabs.setAttribute("role", "tablist");
+  const tabBtns = KINDS.map((k) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = k.tab;
+    b.setAttribute("role", "tab");
+    b.addEventListener("click", () => pick(k));
+    tabs.appendChild(b);
+    return b;
+  });
+  function pick(k) {
+    kind = k;
+    KINDS.forEach((x, i) => tabBtns[i].setAttribute("aria-selected", x === k ? "true" : "false"));
+    label.firstChild.textContent = k.text;
+    msg.textContent = "";
+  }
+
   const form = document.createElement("form");
   const label = document.createElement("label");
-  label.textContent = "Sign in or sign up to share photos and comment";
+  label.textContent = KINDS[0].text;
   const input = document.createElement("input");
   input.type = "email"; input.name = "email"; input.placeholder = "you@example.org";
   input.autocomplete = "email"; input.required = true;
@@ -32,7 +59,8 @@
   const close = document.createElement("button");
   close.type = "button"; close.className = "signin-close"; close.textContent = "×";
   close.setAttribute("aria-label", "Close sign-in bar");
-  bar.append(form, msg, close);
+  bar.append(tabs, form, msg, close);
+  pick(KINDS[0]);
   header.appendChild(bar);
 
   // The map fills the screen below the header, so tell it how tall this bar is.
@@ -49,11 +77,13 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (send.disabled) return;
-    if (demo) { localStorage.setItem("phragDemoMember", "1"); location.reload(); return; }
+    if (demo) { localStorage.setItem("phragDemoMember", "1"); try { localStorage.setItem("phragSignInAs", kind.id); } catch (err) { /* storage blocked */ } location.reload(); return; }
     send.disabled = true;
+    try { localStorage.setItem("phragSignInAs", kind.id); } catch (err) { /* storage blocked */ }
+    // Team members and experts land on the Members page, which shows their status.
     const { error } = await sb.auth.signInWithOtp({
       email: input.value.trim(),
-      options: { emailRedirectTo: location.origin + location.pathname },
+      options: { emailRedirectTo: location.origin + (kind.back ? location.pathname.replace(/[^/]*$/, "login.html") : location.pathname) },
     });
     if (error) {
       msg.textContent = "Couldn't send the link. Wait a minute and try again.";

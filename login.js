@@ -20,6 +20,12 @@ async function render() {
     : member.isExpert ? "Expert"
     : "Community member";
   $("status-hint").textContent = hints.join(" ");
+  // If they picked Team member or Expert in the sign-in bar but this email lacks that role, say so.
+  let asked = null;
+  try { asked = localStorage.getItem("phragSignInAs"); localStorage.removeItem("phragSignInAs"); } catch (e) { /* storage blocked */ }
+  const lacking = !member.roleError && ((asked === "member" && !member.isEditor) || (asked === "expert" && !member.isExpert));
+  $("role-mismatch").hidden = !lacking;
+  if (lacking) $("role-mismatch").textContent = `This email isn't on the ${asked === "member" ? "team member (editor)" : "expert"} list. Ask an admin to add it, then reload.`;
   $("role-error").hidden = !member.roleError;
   $("no-role").hidden = member.isEditor || member.isExpert || member.roleError;
 }

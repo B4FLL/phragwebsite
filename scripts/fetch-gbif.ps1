@@ -2,6 +2,7 @@
 # Run from the project root:  powershell -File scripts/fetch-gbif.ps1
 # Skips iNaturalist-sourced records (fetch-inat.ps1 pulls those directly, with more recent data).
 # Records keep their license + dataset so the site can credit the source.
+$ErrorActionPreference = "Stop"   # a failed download stops the script with an error (so the weekly job can retry), instead of saving half the data
 $base = "https://api.gbif.org/v1/occurrence/search"
 $q = "scientificName=Phragmites%20australis&stateProvince=Utah&country=US&hasCoordinate=true&hasGeospatialIssue=false&limit=300"
 $records = @(); $offset = 0

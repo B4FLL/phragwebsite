@@ -117,3 +117,5 @@
 .map-legend .sw.faded { background: #8a8a80; opacity: 0.35; }
 .map-legend .sw.herd { background: #fff; border: 2px solid #7a4a21; font-size: 10px; line-height: 10px; text-align: center; }
 .map-legend .sw.range { border: 2px dashed #7a4a21; background: rgba(122,74,33,.12); }
+.rejected-panel { margin-top: 10px; font-size: 0.9rem; }
+.rejected-panel summary { cursor: pointer; font-weight: 600; }

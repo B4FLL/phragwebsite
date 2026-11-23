@@ -156,9 +156,26 @@ grant select on public.public_posts, public.public_comments to anon, authenticat
 drop function if exists public.user_is_expert(uuid);
 
 -- ---------- Photo storage ----------
+-- The bucket is PRIVATE: a photo can only be fetched through a temporary signed address that the
+-- site requests for photos that are visible. A hidden photo therefore stops working at its old
+-- address, instead of staying public to anyone holding the link.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('community-photos', 'community-photos', true, 5242880, array['image/jpeg'])
-on conflict (id) do nothing;
+values ('community-photos', 'community-photos', false, 5242880, array['image/jpeg'])
+on conflict (id) do update set public = false;
+
+-- Is this stored file the photo of a visible post? (A function, because visitors can't read the posts table.)
+create or replace function public.photo_is_visible(path text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.posts where image_path = path and status = 'visible');
+$$;
+grant execute on function public.photo_is_visible(text) to anon, authenticated;
+
+drop policy if exists "read visible community photos" on storage.objects;
+create policy "read visible community photos" on storage.objects
+  for select to anon, authenticated
+  using (bucket_id = 'community-photos'
+         and (public.photo_is_visible(name)
+              or (auth.uid() is not null and ((storage.foldername(name))[1] = auth.uid()::text or public.is_moderator()))));
 
 drop policy if exists "members upload own community photos" on storage.objects;
 create policy "members upload own community photos" on storage.objects

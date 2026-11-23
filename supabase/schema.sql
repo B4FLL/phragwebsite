@@ -56,3 +56,40 @@ create or replace view public.public_reports as
 
 grant select on public.public_reports to anon, authenticated;
 grant insert on public.reports to anon, authenticated;
+
+
+-- ---------- Spam limit on public reports ----------
+-- Anyone can file a report without signing in, so the database itself caps how many one connection
+-- can send per hour (the form's own checks can be skipped by a script). Each report remembers a
+-- one-way hash of where it came from, never the address itself. A second, overall cap stops a flood
+-- from many addresses.
+alter table public.reports add column if not exists submitter_hash text;
+
+create or replace function public.limit_reports() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  headers json;
+  ip text;
+begin
+  begin
+    headers := current_setting('request.headers', true)::json;
+  exception when others then headers := null;
+  end;
+  ip := coalesce(headers ->> 'cf-connecting-ip',
+                 trim(split_part(coalesce(headers ->> 'x-forwarded-for', ''), ',', 1)), '');
+  new.submitter_hash := case when ip = '' then null else md5('phrag-reports:' || ip) end;  -- never trust a value sent by the client
+
+  if new.submitter_hash is not null and
+     (select count(*) from public.reports
+      where submitter_hash = new.submitter_hash and created_at > now() - interval '1 hour') >= 6 then
+    raise exception 'Too many reports from this connection. Please try again in an hour.';
+  end if;
+  if (select count(*) from public.reports where created_at > now() - interval '1 hour') >= 100 then
+    raise exception 'Too many reports right now. Please try again in an hour.';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists reports_limit on public.reports;
+create trigger reports_limit before insert on public.reports
+  for each row execute function public.limit_reports();

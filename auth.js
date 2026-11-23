@@ -76,5 +76,19 @@
     } catch (e) { return null; }
   }
 
-  window.phrag = { cfg, demo, sb, getMember };
+  // Web addresses for stored photos. Hidden photos are protected by making the bucket private, so
+  // each visible photo gets a temporary signed address. If signing isn't possible (the bucket is
+  // still public because the SQL hasn't been re-run), fall back to the plain public address.
+  async function photoUrls(bucket, paths) {
+    const out = {};
+    paths.forEach((p) => { out[p] = `${cfg.supabaseUrl}/storage/v1/object/public/${bucket}/${p}`; });
+    if (demo || !sb || !paths.length) return out;
+    try {
+      const { data, error } = await sb.storage.from(bucket).createSignedUrls(paths, 3600);
+      if (!error && data) data.forEach((d) => { if (d.signedUrl && d.path) out[d.path] = d.signedUrl; });
+    } catch (e) { console.error(e); }
+    return out;
+  }
+
+  window.phrag = { cfg, demo, sb, getMember, photoUrls };
 })();

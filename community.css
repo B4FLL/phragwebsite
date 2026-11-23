@@ -61,3 +61,5 @@ select.chip { appearance: auto; }
 .hidden-item img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; flex: none; }
 .hidden-item > div { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .hidden-item p { margin: 0; }
+.more-btn { display: block; margin: 20px auto; border: 0; font: inherit; font-weight: 600; cursor: pointer; }
+.more-btn:disabled { opacity: 0.6; cursor: wait; }

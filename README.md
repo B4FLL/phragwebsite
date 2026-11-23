@@ -45,7 +45,7 @@ In PowerShell, any static server works; VS Code's "Live Server" extension is the
 GitHub Pages only serves static files, so community reports are stored in Supabase (free tier).
 
 1. Make a project at supabase.com.
-2. **SQL Editor**: paste and run `supabase/schema.sql`, then run `supabase/cms.sql` as a second query, then `supabase/members.sql` as a third, then `supabase/community.sql` as a fourth, then `supabase/herds.sql` as a fifth (cow herds on the map).
+2. **SQL Editor**: paste and run `supabase/schema.sql`, then run `supabase/cms.sql` as a second query, then `supabase/members.sql` as a third, then `supabase/community.sql` as a fourth, then `supabase/herds.sql` as a fifth (cow herds on the map). After updating the site, re-run `schema.sql` (report spam limit) and `community.sql` (private photo storage) once; they are safe to re-run.
 3. **Project Settings > API**: copy the Project URL and the `anon` public key into `config.js`.
 4. **Authentication > URL Configuration**: set Site URL to your GitHub Pages address.
 5. Add members (see "Members and editing" below).
@@ -56,7 +56,8 @@ Until step 3 is done the map runs in **demo mode** (reports stay in your own bro
 ## How the data works
 
 - GBIF records are colored by subspecies: invasive (*australis*), native (*americanus*), or unspecified (most records).
-- Community reports start as **unverified**; experts mark them **verified** or **rejected**.
+- Community reports start as **unverified**; experts mark them **verified** or **rejected**. A rejected report can be brought back: experts see a **Rejected reports** list under the review queue with an **Undo reject** button (it returns the report to the queue as unverified).
+- **Spam limit:** anyone can report without signing in, so the database allows 6 reports per hour from one connection and 100 per hour overall (`limit_reports` in `supabase/schema.sql`). Each report stores only a one-way hash of the connection, never the address. Re-run `schema.sql` once to turn this on.
 - Public coordinates for community reports are rounded to ~1 km (the exact point is visible only to experts).
 
 ## Neighborhood photos
@@ -68,12 +69,13 @@ Until step 3 is done the map runs in **demo mode** (reports stay in your own bro
 - **Privacy:** the saved copy of each photo is re-drawn without hidden data. Locations are shown rounded to about 1 km unless the poster ticks "show my exact location". Experts and moderators always see the exact spot. Only the poster chooses to make it exact.
 - **Expert tag:** a green **✓ Expert** tag appears on posts and comments from anyone on the `expert` list in `member_emails`. It's looked up live, so removing someone from the list removes their tag. A commenter's typed name can say anything, so trust the tag, not the name.
 - **Moderation:** experts and editors see a **Hide** button on other people's posts and comments (hidden items disappear from the public feed but stay in the database; moderators bring them back with **Restore** in the Hidden items panel, see "Hidden items" below). Authors can delete their own.
-- **Limits:** 10 posts and 30 comments per person per hour. Photos are shrunk before upload and capped at 5 MB.
+- **Limits:** 10 posts and 30 comments per person per hour. Photos are shrunk before upload and capped at 5 MB. The feed loads 100 photos at a time; **Show more photos** at the bottom loads older ones.
+- **Hidden photos are really hidden:** the photo storage is private. The site asks for a temporary link (valid an hour) for each visible photo, so a hidden photo's old address stops working. Re-run `supabase/community.sql` to switch the storage to private. Until then the site falls back to the old public addresses and keeps working.
 - **On the map:** neighbor photos also appear as purple pins on the map page.
 
 ## Reporting problem photos and comments
 
-Signed-in visitors see a **Report** button on other people's photos and comments and give a short reason (once per item). Moderators (experts and editors) see a red "⚑ Reported" line with the reasons under the item, and can press **Hide**. The button appears only after the database script in `supabase/community.sql` has been run (it includes the `flags` table), so re-run that file once after updating.
+Signed-in visitors see a **Report** button on other people's photos and comments and give a short reason (once per item). Moderators (experts and editors) see a red "⚑ Reported" line with the reasons under the item, and can press **Hide** or **Dismiss reports** (clears the line once it has been dealt with). The button appears only after the database script in `supabase/community.sql` has been run (it includes the `flags` table), so re-run that file once after updating.
 
 ## Cow herds (digital herding)
 
@@ -104,7 +106,7 @@ On the Neighborhood page, experts and editors see a **Hidden items** panel listi
 
 Two jobs run on GitHub's servers with nobody online. Check them under the repository's **Actions** tab. To run one now: pick it, then **Run workflow**.
 
-- **Refresh map data** (`.github/workflows/refresh-data.yml`): every Monday it re-downloads the iNaturalist and GBIF records and commits them if they changed. If the new data looks wrong (too few records) it stops and publishes nothing.
+- **Refresh map data** (`.github/workflows/refresh-data.yml`): every Monday it re-downloads the iNaturalist and GBIF records and commits them if they changed. Each download is tried up to 3 times, and the push is retried if someone changed `main` meanwhile. If the new data looks wrong (too few records) it stops and publishes nothing.
 - **Keep database awake** (`.github/workflows/keep-database-awake.yml`): twice a week it asks Supabase for one row so the free plan doesn't pause the project after a quiet week. If the project is ever paused, this job fails and GitHub emails the repository admins. Restore the project from the Supabase dashboard.
 
 GitHub switches scheduled jobs off after 60 days with no activity in the repository. The weekly data commits count as activity, so this shouldn't happen while the refresh job is working.
@@ -144,6 +146,8 @@ Emails can be typed in any capitalization. The sign-in link proves the person ow
 - Blank cards (experts, team members) and blank sources are hidden. To add one, fill in a blank. To remove one, clear its text.
 - Text is plain text only (no bold or links). Ask a developer if you need more.
 - Every save is also kept in the `site_content_history` table. Press **Previous versions** in the bar (when not editing) to see earlier values of the text and photos on that page and **Restore** one. A restore is saved as a new change, so it can be undone the same way. The original text written in the HTML is not in the history, only values saved through the editor. No database change is needed.
+- **Two editors at once:** if someone else saved an item you are also changing since you opened the page, saving asks before replacing their version (theirs stays in Previous versions).
+- Replaced or removed photos are not deleted from storage, because **Previous versions** can bring them back. Each is small (shrunk before upload); if storage ever fills up, delete old files from the `site-images` bucket in the Supabase dashboard.
 - The text inside the HTML files is just the starting default. Saved edits override it.
 
 

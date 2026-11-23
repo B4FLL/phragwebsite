@@ -2,6 +2,7 @@
 # Run from the project root:  powershell -ExecutionPolicy Bypass -File scripts/fetch-inat.ps1
 # This is newer than GBIF's copy of iNaturalist. We keep only location, date, taxon and link;
 # no photos and no usernames. Obscured coordinates (sensitive species) are as iNaturalist publishes them.
+$ErrorActionPreference = "Stop"   # a failed download stops the script with an error (so the weekly job can retry), instead of saving half the data
 $taxon = 64237   # Phragmites australis (includes subspecies)
 $place = 52      # Utah
 $records = @(); $page = 1

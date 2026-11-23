@@ -1,7 +1,7 @@
 // Utah Phragmites map: GBIF records + community reports + expert verification.
 // With no Supabase keys in config.js this runs in demo mode (reports stay in this browser).
 
-const { cfg, demo, sb, getMember } = window.phrag; // shared sign-in client from auth.js
+const { cfg, demo, sb, getMember, photoUrls } = window.phrag; // shared sign-in client from auth.js
 
 const COLORS = { invasive: "#c0392b", native: "#2a6fb0", unspecified: "#8a8a80", unsure: "#d89a1b" };
 const LABELS = { invasive: "Invasive Phragmites", native: "Native Phragmites", unsure: "Not sure", unspecified: "Not identified to subspecies" };
@@ -33,6 +33,12 @@ const store = {
     if (error) throw error;
     return data;
   },
+  async listRejected() {
+    if (demo) return JSON.parse(localStorage.getItem(DEMO_KEY) || "[]").filter((r) => r.status === "rejected");
+    const { data, error } = await sb.from("reports").select("*").eq("status", "rejected").order("created_at", { ascending: false }).limit(50);
+    if (error) throw error;
+    return data;
+  },
   async setStatus(id, status, expert_note) {
     if (demo) {
       const all = JSON.parse(localStorage.getItem(DEMO_KEY) || "[]");
@@ -42,7 +48,7 @@ const store = {
       return;
     }
     const { data: { user } } = await sb.auth.getUser();
-    const { error } = await sb.from("reports").update({ status, expert_note, verified_by: user.id }).eq("id", id);
+    const { error } = await sb.from("reports").update({ status, expert_note, verified_by: status === "unverified" ? null : user.id }).eq("id", id);
     if (error) throw error;
   },
 };
@@ -360,8 +366,9 @@ async function listPhotoPosts() {
   const { data, error } = await sb.from("public_posts")
     .select("id,lat,lng,author_name,caption,image_path,author_is_expert,taken_on");
   if (error) throw error;
-  return data.filter((p) => PHOTO_PATH.test(p.image_path))
-    .map((p) => ({ ...p, imageUrl: `${cfg.supabaseUrl}/storage/v1/object/public/community-photos/${p.image_path}` }));
+  const ok = data.filter((p) => PHOTO_PATH.test(p.image_path));
+  const urls = await photoUrls("community-photos", ok.map((p) => p.image_path));
+  return ok.map((p) => ({ ...p, imageUrl: urls[p.image_path] }));
 }
 
 async function addPhotoPins() {
@@ -817,7 +824,7 @@ async function renderQueue() {
         buttons.forEach((b) => (b.disabled = true)); // no double-sends while saving
         try {
           await store.setStatus(r.id, status, note.value.trim() || null);
-          renderQueue(); load();
+          renderQueue(); renderRejected(); load();
         } catch (err) {
           console.error(err);
           buttons.forEach((b) => (b.disabled = false));
@@ -837,7 +844,42 @@ async function renderQueue() {
   }
 }
 
-
+// Rejected reports vanish from the map and the queue, so list them here with an Undo.
+// Undo puts the report back as unverified (it shows on the map again and returns to the queue).
+async function renderRejected() {
+  const box = $("rejected-list");
+  let items;
+  try { items = await store.listRejected(); }
+  catch (e) { console.error(e); box.textContent = "Couldn't load rejected reports."; return; }
+  $("rejected-count").textContent = items.length;
+  box.textContent = "";
+  if (!items.length) { box.textContent = "No rejected reports."; return; }
+  for (const r of items) {
+    const item = document.createElement("div");
+    item.className = "queue-item";
+    row(item, "Guess", LABELS[r.id_guess === "unsure" ? "unsure" : r.id_guess]);
+    row(item, "Seen", `${r.observed_on} at ${(+r.lat).toFixed(4)}, ${(+r.lng).toFixed(4)}`);
+    if (r.expert_note) row(item, "Expert note", r.expert_note);
+    const undo = document.createElement("button");
+    undo.type = "button"; undo.textContent = "Undo reject";
+    undo.addEventListener("click", async () => {
+      undo.disabled = true;
+      try {
+        await store.setStatus(r.id, "unverified", null);
+        renderRejected(); renderQueue(); load();
+      } catch (err) {
+        console.error(err);
+        undo.disabled = false;
+        undo.textContent = "Couldn't undo, try again";
+      }
+    });
+    const actions = document.createElement("div");
+    actions.className = "queue-actions";
+    actions.appendChild(undo);
+    item.appendChild(actions);
+    box.appendChild(item);
+  }
+}
 
 // Experts see the review queue; everyone else never sees this section.
 (async function showExpertQueue() {
@@ -852,6 +894,7 @@ async function renderQueue() {
     $("expert-section").hidden = false;
     $("expert-email").textContent = member.email;
     renderQueue();
+    renderRejected();
   } catch (e) { console.error(e); }
 })();
 

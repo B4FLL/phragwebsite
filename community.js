@@ -3,10 +3,11 @@
 // With no Supabase keys in config.js it runs in demo mode (everything stays in this browser).
 // All text is written with textContent, never as HTML.
 
-const { cfg, demo, sb, getMember } = window.phrag;
+const { cfg, demo, sb, getMember, photoUrls } = window.phrag;
 const $ = (id) => document.getElementById(id);
 
 const BUCKET = "community-photos";
+const PAGE_SIZE = 100;  // photos loaded at a time; "Show more photos" asks for another page
 const UTAH = { latMin: 36.9, latMax: 42.1, lngMin: -114.1, lngMax: -108.9 };
 const ID_LABELS = { invasive: "Looks invasive", native: "Looks native", unsure: "Not sure" };
 const SAFE_PATH = /^[0-9a-f-]{36}\/[A-Za-z0-9._-]{1,80}$/;
@@ -19,6 +20,7 @@ let userPos = null;     // where the viewer is, for "Near me"
 let flagsReady = false; // is the "Report this" table set up?
 let flags = {};         // moderators only: item id -> list of reasons people gave
 let hashHandled = false; // has the link's #post-... jump already happened?
+let postLimit = PAGE_SIZE; // how many photos to ask for (grows with "Show more photos")
 let loadFailed = false;  // did the last photo load fail? (keeps the error text from being overwritten)
 let guess = "all";       // identification filter: "all", "invasive", "native" or "unsure"
 
@@ -36,11 +38,10 @@ const when = (iso) => new Date(iso).toLocaleDateString(undefined, { year: "numer
 const DEMO_POSTS = "phragPosts", DEMO_COMMENTS = "phragComments";
 const readDemo = (k) => JSON.parse(localStorage.getItem(k) || "[]");
 const writeDemo = (k, v) => localStorage.setItem(k, JSON.stringify(v));
-const publicUrl = (path) => `${cfg.supabaseUrl}/storage/v1/object/public/${BUCKET}/${path}`;
 const round = (n) => Math.round(n * 100) / 100;
 
 const store = {
-  async listPosts() {
+  async listPosts(limit = PAGE_SIZE) {
     if (demo) {
       const comments = readDemo(DEMO_COMMENTS);
       return readDemo(DEMO_POSTS)
@@ -55,9 +56,10 @@ const store = {
         }))
         .reverse();
     }
-    const { data, error } = await sb.from("public_posts").select("*").order("created_at", { ascending: false }).limit(100);
+    const { data, error } = await sb.from("public_posts").select("*").order("created_at", { ascending: false }).limit(limit);
     if (error) throw error;
-    return data.map((p) => ({ ...p, imageUrl: SAFE_PATH.test(p.image_path) ? publicUrl(p.image_path) : "" }));
+    const urls = await photoUrls(BUCKET, data.map((p) => p.image_path).filter((x) => SAFE_PATH.test(x)));
+    return data.map((p) => ({ ...p, imageUrl: urls[p.image_path] || "" }));
   },
 
   async createPost(post, blob) {
@@ -146,9 +148,10 @@ const store = {
     ]);
     if (p.error) throw p.error;
     if (c.error) throw c.error;
+    const urls = await photoUrls(BUCKET, p.data.map((x) => x.image_path).filter((x) => SAFE_PATH.test(x)));
     return [
       ...p.data.map((x) => ({ table: "posts", id: x.id, who: x.author_name, text: x.caption || "(no caption)", at: x.created_at,
-        imageUrl: SAFE_PATH.test(x.image_path) ? publicUrl(x.image_path) : "" })),
+        imageUrl: urls[x.image_path] || "" })),
       ...c.data.map((x) => ({ table: "comments", id: x.id, who: x.author_name, text: x.body, at: x.created_at })),
     ];
   },
@@ -186,6 +189,12 @@ const store = {
     if (error) throw error;
   },
 
+  async clearFlags(itemId) { // moderators only: the reports were looked at, so stop showing them
+    if (demo) { writeDemo("phragFlags", readDemo("phragFlags").filter((f) => f.item_id !== itemId)); return; }
+    const { error } = await sb.from("flags").delete().eq("item_id", itemId);
+    if (error) throw error;
+  },
+
   async listFlags() { // moderators only
     if (demo) return readDemo("phragFlags");
     const { data, error } = await sb.from("flags").select("kind,item_id,reason");
@@ -197,9 +206,14 @@ const store = {
 // Moderators see how many people reported an item, and why.
 function flagNote(id) {
   const reasons = flags[id];
-  return reasons && reasons.length
-    ? [h("p", { className: "flagged" }, `⚑ Reported ${reasons.length}×: ${reasons.join(" · ")}`)]
-    : [];
+  if (!reasons || !reasons.length) return [];
+  const note = h("p", { className: "flagged" }, `⚑ Reported ${reasons.length}×: ${reasons.join(" · ")} `);
+  note.append(actionBtn("Dismiss reports", "link-btn", async () => {
+    await store.clearFlags(id);
+    delete flags[id];
+    note.remove();
+  }));
+  return [note];
 }
 
 async function loadFlags() {
@@ -265,14 +279,24 @@ function renderFeed() {
       : nearby
         ? "No photos near you yet. Try a wider distance, or be the first to share one!"
         : "No photos yet. Be the first to share one!"));
+    appendMore(feed);
     return;
   }
   list.forEach((p) => feed.append(renderPost(p)));
+  appendMore(feed);
   // Jump to a linked post (#post-...) only when the page first opens, not on every redraw.
   if (!hashHandled) {
     const target = location.hash && document.getElementById(location.hash.slice(1));
     if (target) target.scrollIntoView();
   }
+}
+
+// A full page of photos means there may be older ones: offer to load another page.
+function appendMore(feed) {
+  if (demo || loadFailed || posts.length < postLimit) return;
+  const btn = h("button", { type: "button", className: "button more-btn" }, "Show more photos");
+  btn.addEventListener("click", async () => { btn.disabled = true; postLimit += PAGE_SIZE; await reload(); });
+  feed.append(btn);
 }
 
 function renderPost(p) {
@@ -376,7 +400,7 @@ async function reload() {
   $("feed-status").textContent = "Loading…";
   loadFailed = false;
   try {
-    posts = await store.listPosts();
+    posts = await store.listPosts(postLimit);
     await loadFlags();
   } catch (e) {
     console.error(e);

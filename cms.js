@@ -18,6 +18,7 @@
   const original = {};      // key -> last saved value (text, or JSON string for photos)
   const pending = {};       // photo key -> { blob, alt } to upload, or null to remove
   const pendingUrls = {};   // link key -> new web address ("" removes it)
+  const stamps = {};        // key -> updated_at when this page last read it (connected mode), to spot someone else's edits
   let editing = false;
 
   const norm = (s) => s.replace(/\s+/g, " ").trim();
@@ -32,9 +33,27 @@
   // ---------- Reading and showing content ----------
   async function readContent() {
     if (demo) return JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
-    const { data, error } = await sb.from("site_content").select("key,value");
+    const { data, error } = await sb.from("site_content").select("key,value,updated_at");
     if (error) throw error;
+    data.forEach((r) => (stamps[r.key] = r.updated_at));
     return Object.fromEntries(data.map((r) => [r.key, r.value]));
+  }
+
+  // Remember when each key was last changed, so our own saves don't look like someone else's.
+  async function refreshStamps(keys) {
+    if (demo || !keys.length) return;
+    try {
+      const { data } = await sb.from("site_content").select("key,updated_at").in("key", keys);
+      (data || []).forEach((r) => (stamps[r.key] = r.updated_at));
+    } catch (e) { console.error(e); }
+  }
+
+  // Keys among `keys` that another editor changed after this page loaded them.
+  async function changedByOthers(keys) {
+    if (demo || !keys.length) return [];
+    const { data, error } = await sb.from("site_content").select("key,updated_at").in("key", keys);
+    if (error) throw error;
+    return data.filter((r) => !stamps[r.key] || new Date(r.updated_at) > new Date(stamps[r.key])).map((r) => r.key);
   }
 
   function showImage(fig, o) {
@@ -217,6 +236,7 @@
           b.disabled = true;
           try {
             await writeContent([{ key: r.key, value: r.value }]);
+            await refreshStamps([r.key]);
             apply({ ...original, [r.key]: r.value });
             status.textContent = "Restored.";
             historyBox.hidden = true;
@@ -284,6 +304,17 @@
     saveBtn.disabled = true;
     status.textContent = "Saving…";
     try {
+      // Two editors can have the page open at once. If someone saved one of the things we are
+      // about to change since we loaded it, ask before overwriting (their version stays in Previous versions).
+      const touched = [
+        ...textEls.filter((el) => norm(el.textContent) !== original[el.dataset.edit]).map((el) => el.dataset.edit),
+        ...Object.keys(pending), ...Object.keys(pendingUrls),
+      ];
+      const clash = await changedByOthers(touched);
+      if (clash.length && !confirm(`Someone else changed ${clash.length} of these items since you opened the page (${clash.slice(0, 5).join(", ")}${clash.length > 5 ? ", …" : ""}).\n\nSave anyway and replace their version? (Theirs stays in Previous versions.)\n\nCancel keeps your edits so you can copy them, then reload the page to see theirs.`)) {
+        status.textContent = "Not saved: someone else edited this page first.";
+        return;
+      }
       const rows = [];
       for (const el of textEls) {
         const key = el.dataset.edit, value = norm(el.textContent);
@@ -295,7 +326,7 @@
         rows.push({ key, value: JSON.stringify({ url, alt: p.alt }) });
       }
       for (const [key, value] of Object.entries(pendingUrls)) rows.push({ key, value });
-      if (rows.length) await writeContent(rows);
+      if (rows.length) { await writeContent(rows); await refreshStamps(rows.map((r) => r.key)); }
       const saved = Object.fromEntries(Object.entries(original));
       rows.forEach((r) => (saved[r.key] = r.value));
       stopEditing();

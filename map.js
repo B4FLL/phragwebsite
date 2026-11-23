@@ -365,8 +365,8 @@ async function listPhotoPosts() {
 }
 
 async function addPhotoPins() {
-  photoLayer.clearLayers();
   const photos = await listPhotoPosts();
+  photoLayer.clearLayers(); // cleared only after the fetch, so two overlapping loads can't both add pins
   for (const p of photos) {
     const m = L.circleMarker([p.lat, p.lng], { radius: 8, color: "#fff", weight: 2, fillColor: "#6b3fa0", fillOpacity: 0.95 });
     const el = document.createElement("div");
@@ -403,13 +403,17 @@ function loadRecords(s) {
   return recordCache[s.file];
 }
 
+let loadRun = 0; // newest load() call; an older one still running must stop, or its records get added twice
 async function load() {
+  const run = ++loadRun;
+  const stale = () => run !== loadRun;
   markers = [];
   const notes = [];
   let publicCount = 0, reportCount = 0;
   for (const s of SOURCES) {
     try {
       const data = await loadRecords(s);
+      if (stale()) return;
       data.records.forEach((r) => addPublicRecord(r, s.name));
       publicCount += data.records.length;
       notes.push(`${s.name} (${data.fetched})`);
@@ -420,6 +424,7 @@ async function load() {
   }
   try {
     const reports = await store.listPublic();
+    if (stale()) return;
     reports.forEach(addReport);
     reportCount = reports.length;
   } catch (e) {
@@ -428,8 +433,10 @@ async function load() {
   }
   let photoCount = 0;
   try { photoCount = await addPhotoPins(); } catch (e) { console.error(e); }
+  if (stale()) return;
   applyFilters();
   const herdCount = await refreshHerds(); // after the records load, so each herd can count the Phragmites near it
+  if (stale()) return;
   const oldCount = markers.filter((x) => x.old).length;
   $("stats").textContent =
     `${publicCount.toLocaleString()} public records from ${notes.join(", ")} + ${reportCount} community report${reportCount === 1 ? "" : "s"}` +

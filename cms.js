@@ -160,6 +160,13 @@
   bar.append(editBtn, saveBtn, cancelBtn, historyBtn, status, members, historyBox);
   document.body.appendChild(bar);
 
+  // Keep the bar from covering the footer: pad the page by the bar's current height
+  // (it grows when the buttons wrap on a phone or the Previous versions list is open).
+  function padForBar() {
+    document.body.style.paddingBottom = bar.hidden ? "" : bar.offsetHeight + "px";
+  }
+  if (window.ResizeObserver) new ResizeObserver(padForBar).observe(bar);
+
   function setBar() {
     editBtn.hidden = editing;
     saveBtn.hidden = cancelBtn.hidden = !editing;

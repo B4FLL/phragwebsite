@@ -9,6 +9,7 @@ The site has no automated test suite. Changes are checked by hand or with one-of
 | 2026-11-19 | Mobile menu hidden behind the map | [evidence/mobile-menu-fix.md](evidence/mobile-menu-fix.md) |
 | 2026-11-19 | First batch of small features and bug fixes | [evidence/small-features.md](evidence/small-features.md) |
 | 2026-11-21 | Cow herds layer, map legend, expert photos, social links | [evidence/cows-and-herding.md](evidence/cows-and-herding.md) |
+| 2026-11-22 | Scan fixes: doubled map records, stale photo count, editor bar over footer | [evidence/bug-fixes.md](evidence/bug-fixes.md) |
 
 Screenshots used by the evidence files are in [testing/](testing/). To add an entry, create `evidence/<fix-name>.md` and add a row above.
 

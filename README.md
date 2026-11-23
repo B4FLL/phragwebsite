@@ -67,7 +67,7 @@ Until step 3 is done the map runs in **demo mode** (reports stay in your own bro
 - **Location:** read from the photo's GPS data when it has one (phone photos usually do), then adjustable on a small map. Locations must be inside Utah.
 - **Privacy:** the saved copy of each photo is re-drawn without hidden data. Locations are shown rounded to about 1 km unless the poster ticks "show my exact location". Experts and moderators always see the exact spot. Only the poster chooses to make it exact.
 - **Expert tag:** a green **✓ Expert** tag appears on posts and comments from anyone on the `expert` list in `member_emails`. It's looked up live, so removing someone from the list removes their tag. A commenter's typed name can say anything, so trust the tag, not the name.
-- **Moderation:** experts and editors see a **Hide** button on other people's posts and comments (hidden items disappear from the public feed but stay in the database; un-hide by changing `status` back to `visible` in Table Editor). Authors can delete their own.
+- **Moderation:** experts and editors see a **Hide** button on other people's posts and comments (hidden items disappear from the public feed but stay in the database; moderators bring them back with **Restore** in the Hidden items panel, see "Hidden items" below). Authors can delete their own.
 - **Limits:** 10 posts and 30 comments per person per hour. Photos are shrunk before upload and capped at 5 MB.
 - **On the map:** neighbor photos also appear as purple pins on the map page.
 

@@ -245,7 +245,6 @@ a {
 .cms-history-row span { overflow-wrap: anywhere; min-width: 0; }
 .cms-status { font-size: 0.9rem; color: #e6efe8; }
 
-body.editing { padding-bottom: 80px; }
 .editing [data-edit] { outline: 2px dashed var(--tan); outline-offset: 3px; cursor: text; min-height: 1em; }
 .editing [data-edit]:focus { outline: 2px solid var(--green); background: rgba(255, 251, 232, 0.9); color: var(--text); }
 .editing [data-edit]:empty::before { content: "(empty - click to type)"; font-style: italic; opacity: 0.6; }

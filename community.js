@@ -19,6 +19,7 @@ let userPos = null;     // where the viewer is, for "Near me"
 let flagsReady = false; // is the "Report this" table set up?
 let flags = {};         // moderators only: item id -> list of reasons people gave
 let hashHandled = false; // has the link's #post-... jump already happened?
+let loadFailed = false;  // did the last photo load fail? (keeps the error text from being overwritten)
 let guess = "all";       // identification filter: "all", "invasive", "native" or "unsure"
 
 // ---------- Tiny DOM helper ----------
@@ -243,8 +244,10 @@ function renderFeed() {
   feed.textContent = "";
   let list = posts.filter((p) => guess === "all" || p.id_guess === guess);
   list.forEach((p) => delete p.km);
-  if (mode === "new" && guess !== "all") {
-    $("feed-status").textContent = `${list.length} of ${posts.length} photo${posts.length === 1 ? "" : "s"}`;
+  if (mode === "new" && !loadFailed) {
+    $("feed-status").textContent = guess !== "all"
+      ? `${list.length} of ${posts.length} photo${posts.length === 1 ? "" : "s"}`
+      : `${posts.length} photo${posts.length === 1 ? "" : "s"}`;
   }
   if (mode === "near" && userPos) {
     list.forEach((p) => (p.km = km(userPos, p)));
@@ -371,13 +374,14 @@ async function renderComments(p, panel, toggle) {
 
 async function reload() {
   $("feed-status").textContent = "Loading…";
+  loadFailed = false;
   try {
     posts = await store.listPosts();
     await loadFlags();
-    $("feed-status").textContent = `${posts.length} photo${posts.length === 1 ? "" : "s"}`;
   } catch (e) {
     console.error(e);
     $("feed-status").textContent = "Couldn't load photos.";
+    loadFailed = true;
     posts = [];
   }
   renderFeed();

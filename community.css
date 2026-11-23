@@ -63,3 +63,7 @@ select.chip { appearance: auto; }
 .hidden-item p { margin: 0; }
 .more-btn { display: block; margin: 20px auto; border: 0; font: inherit; font-weight: 600; cursor: pointer; }
 .more-btn:disabled { opacity: 0.6; cursor: wait; }
+
+/* The posting rules fold into one line until opened */
+.rules-box summary { cursor: pointer; }
+.rules-box[open] summary { margin-bottom: 6px; }

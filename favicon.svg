@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#1f3d2b"/>
+  <!-- three reed stems with feathery seed heads -->
+  <g stroke="#c9a66b" stroke-width="3.5" stroke-linecap="round" fill="none">
+    <path d="M22 56 C22 40 20 30 18 20"/>
+    <path d="M32 56 C32 38 33 26 34 14"/>
+    <path d="M42 56 C42 42 44 32 47 24"/>
+  </g>
+  <g fill="#e6d2a6">
+    <ellipse cx="17" cy="15" rx="4" ry="8" transform="rotate(-12 17 15)"/>
+    <ellipse cx="34.5" cy="10" rx="4.5" ry="9"/>
+    <ellipse cx="48" cy="19" rx="4" ry="7.5" transform="rotate(18 48 19)"/>
+  </g>
+</svg>

@@ -14,7 +14,7 @@
   border-right: 1px solid #ddd8c8;
 }
 
-.panel h2 { margin: 0 0 4px; font-size: 1.4rem; }
+.panel h1 { margin: 0 0 4px; font-size: 1.4rem; }
 .panel h3 { margin: 22px 0 8px; font-size: 1.05rem; }
 .panel label { display: block; margin: 10px 0; font-size: 0.9rem; font-weight: 600; }
 .panel input[type="text"], .panel input[type="date"], .panel input[type="email"],
@@ -119,3 +119,9 @@
 .map-legend .sw.range { border: 2px dashed #7a4a21; background: rgba(122,74,33,.12); }
 .rejected-panel { margin-top: 10px; font-size: 0.9rem; }
 .rejected-panel summary { cursor: pointer; font-weight: 600; }
+
+/* Folded sections in the map panel */
+.panel-fold { margin-top: 22px; }
+.panel-fold summary, .disclaimer summary { cursor: pointer; font-weight: 700; color: var(--green-dark); }
+.panel-fold summary { font-size: 1.05rem; }
+.panel-fold[open] summary { margin-bottom: 8px; }

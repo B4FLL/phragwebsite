@@ -6,6 +6,7 @@
   <title>Neighborhood Photos</title>
   <meta name="description" content="Photos of Phragmites shared by neighbors across Utah, with comments from experts.">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="community.css">
 </head>
@@ -15,10 +16,13 @@
       <a class="logo" href="index.html">Phragmites Project</a>
       <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
       <nav id="site-nav" class="site-nav">
-        <a href="index.html#problem">The Problem</a>
+        <a href="index.html#problem">Our Project</a>
+        <a href="index.html#solution">Our Solution</a>
         <a href="map.html">Map</a>
         <a href="community.html" aria-current="page">Neighborhood</a>
         <a href="identify.html">Identify</a>
+        <a href="index.html#experts">Experts</a>
+        <a href="index.html#team">Team</a>
         <a href="login.html">Members</a>
       </nav>
     </div>
@@ -27,15 +31,16 @@
   <main>
     <section class="section">
       <div class="container feed-wrap">
-        <h2>Neighborhood photos</h2>
+        <h1>Neighborhood photos</h1>
         <p>See Phragmites that neighbors have spotted, and share your own. Experts comment with a
           <span class="badge-expert">✓ Expert</span> tag so you can tell their advice apart.</p>
 
-        <div class="notice">
-          <strong>Before you post:</strong> only photograph plants from public land or your own
+        <details class="notice rules-box">
+          <summary><strong>Before you post</strong>: the rules in short</summary>
+          Only photograph plants from public land or your own
           property. Please keep people's faces, house numbers and license plates out of the photo.
           Don't cut or pull Phragmites yourself. Photos and comments can be hidden by moderators. See the <a href="privacy.html">privacy &amp; community rules</a>.
-        </div>
+        </details>
 
         <p id="demo-note" class="notice" hidden>
           Demo mode: the database isn't connected, so posts here are saved only in this browser.
@@ -117,7 +122,7 @@
   </main>
 
   <footer class="site-footer">
-    <div class="container"><p>&copy; <span id="year"></span> Phragmites Project · FIRST LEGO League · <a href="privacy.html">Privacy &amp; community rules</a></p>
+    <div class="container"><p>&copy; <span id="year"></span> Phragmites Project · FIRST LEGO League · <a href="index.html#sources">Sources</a> · <a href="privacy.html">Privacy &amp; community rules</a></p>
       <ul class="social" aria-label="Our social media">
         <!-- Editors set each address on the page itself (Edit page, then click the name). Links with no address stay hidden. -->
         <li hidden><a data-edit-url="social-instagram" target="_blank" rel="noopener">Instagram</a></li>

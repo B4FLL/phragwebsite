@@ -60,7 +60,7 @@ a {
   justify-content: space-between;
   gap: 24px;
   min-height: 60px;
-  max-width: 1200px;   /* wider than the page text so ten links fit on one line */
+  /* same width as the page text, so the logo lines up with it */
 }
 
 .logo {
@@ -148,7 +148,7 @@ a {
   background: var(--bg-alt);
 }
 
-.section h2 {
+.section h1, .section h2 {
   font-size: 2rem;
   margin-top: 0;
 }
@@ -188,8 +188,8 @@ a {
   font-size: 0.9rem;
 }
 
-/* Menu button instead of the link row (the extra "Sign in" item needs the room) when the links no longer fit on one line */
-@media (max-width: 1180px) {
+/* Menu button instead of the link row when the links (plus the "Sign in" item) no longer fit on one line */
+@media (max-width: 940px) {
   .nav-toggle {
     display: block;
   }
@@ -262,7 +262,7 @@ a {
 .site-footer a { color: #e6efe8; }
 
 /* Sign in / sign up bar under the header (signin-bar.js) */
-.signin-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 44px 8px 16px; background: var(--tan); color: var(--green-dark); font-size: 0.92rem; position: relative; }
+.signin-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 6px max(44px, calc((100% - var(--max-width)) / 2 + 20px)) 6px max(16px, calc((100% - var(--max-width)) / 2 + 20px));  /* lines up with the logo and page text */ background: var(--tan); color: var(--green-dark); font-size: 0.92rem; position: relative; }
 .signin-bar[hidden] { display: none; }
 .signin-bar form { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0; }
 .signin-bar label { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-weight: 600; }
@@ -270,14 +270,14 @@ a {
 .signin-bar form button { padding: 7px 14px; border: 0; border-radius: 6px; background: var(--green-dark); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
 .signin-bar form button:disabled { opacity: 0.6; cursor: wait; }
 .signin-close { position: absolute; top: 4px; right: 8px; border: 0; background: none; color: var(--green-dark); font-size: 1.5rem; line-height: 1; cursor: pointer; padding: 4px 8px; }
-.signin-tabs { display: flex; gap: 4px; flex-basis: 100%; }
+.signin-tabs { display: flex; gap: 4px; }
 .signin-tabs button { padding: 5px 12px; border: 1px solid var(--green-dark); border-radius: 999px; background: transparent; color: var(--green-dark); font: inherit; font-size: 0.85rem; cursor: pointer; }
 .signin-tabs button[aria-selected="true"] { background: var(--green-dark); color: #fff; }
 
 /* "Sign in" item in the menu that reopens the closed sign-in bar */
 .site-nav .nav-signin { background: none; border: 0; padding: 0; color: var(--tan); font: inherit; font-size: 0.95rem; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .site-nav .nav-signin[hidden] { display: none; }
-@media (max-width: 1180px) { .site-nav .nav-signin { padding: 10px 0; text-align: left; } }
+@media (max-width: 940px) { .site-nav .nav-signin { padding: 10px 0; text-align: left; } }
 
 /* Expert photos on the Experts cards */
 .expert-photo { margin: 0 0 12px; }
@@ -288,3 +288,9 @@ a {
 .social li[hidden] { display: none; }
 .social a { color: inherit; font-weight: 600; }
 .editing .social a { outline: 2px dashed var(--tan); outline-offset: 3px; cursor: pointer; }
+
+/* Phones: the sign-in bar starts as one short line and opens when tapped */
+.signin-expand { display: none; border: 0; background: none; padding: 4px 0; color: var(--green-dark); font: inherit; font-weight: 600; cursor: pointer; text-align: left; }
+.signin-bar.compact .signin-expand { display: block; }
+.signin-bar.compact .signin-tabs, .signin-bar.compact form, .signin-bar.compact .signin-msg:empty { display: none; }
+@media (max-width: 700px) { .signin-tabs { flex-basis: 100%; } }

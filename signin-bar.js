@@ -62,7 +62,15 @@
   const close = document.createElement("button");
   close.type = "button"; close.className = "signin-close"; close.textContent = "×";
   close.setAttribute("aria-label", "Close sign-in bar");
-  bar.append(tabs, form, msg, close);
+  // On phones the full bar would push the page down a long way, so it starts as one line
+  // ("Sign in or sign up ▸") and opens on tap.
+  const expand = document.createElement("button");
+  expand.type = "button"; expand.className = "signin-expand";
+  expand.textContent = "Sign in or sign up ▸";
+  expand.setAttribute("aria-expanded", "false");
+  expand.addEventListener("click", () => { bar.classList.remove("compact"); expand.setAttribute("aria-expanded", "true"); input.focus(); });
+  if (window.matchMedia && matchMedia("(max-width: 700px)").matches) bar.classList.add("compact");
+  bar.append(expand, tabs, form, msg, close);
   pick(KINDS[0]);
   header.appendChild(bar);
 
@@ -93,6 +101,7 @@
     if (nav) nav.classList.remove("open");
     const toggle = header.querySelector(".nav-toggle");
     if (toggle) toggle.setAttribute("aria-expanded", "false");
+    bar.classList.remove("compact"); // opened on purpose from the menu, so show the whole form
     update();
     input.focus();
   });

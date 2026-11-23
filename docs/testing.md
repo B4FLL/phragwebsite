@@ -11,6 +11,7 @@ The site has no automated test suite. Changes are checked by hand or with one-of
 | 2026-11-21 | Cow herds layer, map legend, expert photos, social links | [evidence/cows-and-herding.md](evidence/cows-and-herding.md) |
 | 2026-11-22 | Scan fixes: doubled map records, stale photo count, editor bar over footer | [evidence/bug-fixes.md](evidence/bug-fixes.md) |
 | 2026-11-22 | Risk fixes: reject undo, dismiss reports, show more photos, private photos, report limit, edit conflicts, refresh retry | [evidence/risk-fixes.md](evidence/risk-fixes.md) |
+| 2026-11-22 | Visual polish: one menu, aligned header, slimmer sign-in bar, folded map panel, site icon | [evidence/visual-polish.md](evidence/visual-polish.md) |
 
 Screenshots used by the evidence files are in [testing/](testing/). To add an entry, create `evidence/<fix-name>.md` and add a row above.
 

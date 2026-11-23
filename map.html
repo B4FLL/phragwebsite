@@ -6,6 +6,7 @@
   <title>Utah Phragmites Map</title>
   <meta name="description" content="Map of Phragmites sightings across Utah. Report a sighting or verify reports as an expert.">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="map.css">
 </head>
@@ -15,14 +16,14 @@
       <a class="logo" href="index.html">Phragmites Project</a>
       <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
       <nav id="site-nav" class="site-nav">
-        <a href="index.html#problem">The Problem</a>
-        <a href="index.html#research">Research</a>
+        <a href="index.html#problem">Our Project</a>
         <a href="index.html#solution">Our Solution</a>
         <a href="map.html" aria-current="page">Map</a>
         <a href="community.html">Neighborhood</a>
         <a href="identify.html">Identify</a>
+        <a href="index.html#experts">Experts</a>
+        <a href="index.html#team">Team</a>
         <a href="login.html">Members</a>
-        <a href="index.html#sources">Sources</a>
       </nav>
     </div>
   </header>
@@ -32,66 +33,8 @@
       <p id="mode-banner" class="banner" hidden></p>
 
       <section>
-        <h2>Utah Phragmites map</h2>
+        <h1>Utah Phragmites map</h1>
         <p id="stats" class="muted-line">Loading…</p>
-      </section>
-
-      <section>
-        <h3>Show on map</h3>
-        <label class="filter"><input type="checkbox" data-layer="invasive" checked> <span class="dot invasive"></span> Invasive (subsp. <em>australis</em>)</label>
-        <label class="filter"><input type="checkbox" data-layer="native" checked> <span class="dot native"></span> Native (subsp. <em>americanus</em>)</label>
-        <label class="filter"><input type="checkbox" data-layer="unspecified" checked> <span class="dot unspecified"></span> Not identified to subspecies</label>
-        <label class="filter"><input type="checkbox" data-layer="unsure" checked> <span class="dot unsure"></span> Community report, unsure</label>
-        <label class="filter"><input type="checkbox" id="show-photos" checked> <span class="dot photo"></span> Neighbor photos (<a href="community.html">see all</a>)</label>
-        <label class="filter"><input type="checkbox" id="show-herds" checked> <span class="dot herd"></span> Cow herds</label>
-        <label class="filter"><input type="checkbox" id="show-range" checked> <span class="ring"></span> Grazing range (2 km around each herd)</label>
-        <label class="filter"><input type="checkbox" id="show-old" checked> Include records older than 5 years (shown faded)</label>
-        <p class="small">Small dots are public records from <a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist</a> and <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF</a> (museums, herbaria). Large dots are reports from this site; a solid outline means an expert verified it.</p>
-        <p class="small"><a href="privacy.html">Privacy &amp; community rules</a></p>
-        <p class="disclaimer"><strong>Data age:</strong> sightings can be years old. Phragmites may have spread, died back, or been treated since, and some sites were surveyed only once (for example a batch of records from 2009). Treat faded dots as leads to re-check, not current conditions. Not every patch is recorded, and no dot here is a confirmed location of invasive Phragmites unless an expert verified it.</p>
-      </section>
-
-      <section id="herd-panel">
-        <h3>Cow herds</h3>
-        <p class="small">Herds our digital herding project is tracking. The number is how many invasive Phragmites records lie within 2 km of the herd, which is roughly what it can graze.</p>
-        <div id="herd-list" class="herd-list">Loading…</div>
-        <!-- Only shown to signed-in editors and experts. -->
-        <div id="herd-admin" hidden>
-          <button id="herd-btn" class="button small-btn" type="button">Add a herd</button>
-          <form id="herd-form" hidden>
-            <p id="herd-pick-info" class="small"></p>
-            <label>Herd name
-              <input type="text" name="name" maxlength="80" required>
-            </label>
-            <label>Number of cows (optional)
-              <input type="number" name="head_count" min="1" max="10000" inputmode="numeric">
-            </label>
-            <label>What are they doing?
-              <select name="activity" required>
-                <option value="grazing">Grazing</option>
-                <option value="moving">Being moved</option>
-                <option value="resting">Resting</option>
-              </select>
-            </label>
-            <label>Date seen
-              <input type="date" name="seen_on" required>
-            </label>
-            <label>Notes (optional)
-              <textarea name="note" rows="2" maxlength="500"></textarea>
-            </label>
-            <button class="button small-btn" type="submit">Save herd</button>
-            <button class="link-btn" type="button" id="herd-cancel">Cancel</button>
-            <p id="herd-msg" class="small" role="status"></p>
-          </form>
-        </div>
-      </section>
-
-      <section>
-        <h3>Share and download</h3>
-        <button id="copy-link" class="link-btn" type="button">Copy link to this view</button><br>
-        <button id="dl-csv" class="link-btn" type="button">Download shown records (CSV)</button><br>
-        <button id="dl-geojson" class="link-btn" type="button">Download shown records (GeoJSON)</button>
-        <p class="small">Downloads follow the checkboxes above. Records come from iNaturalist and GBIF (licensed per record; credit them if you reuse the data). Community report locations are rounded to about 1 km.</p>
       </section>
 
       <section>
@@ -135,6 +78,66 @@
         </form>
       </section>
 
+      <section>
+        <h3>Show on map</h3>
+        <label class="filter"><input type="checkbox" data-layer="invasive" checked> <span class="dot invasive"></span> Invasive (subsp. <em>australis</em>)</label>
+        <label class="filter"><input type="checkbox" data-layer="native" checked> <span class="dot native"></span> Native (subsp. <em>americanus</em>)</label>
+        <label class="filter"><input type="checkbox" data-layer="unspecified" checked> <span class="dot unspecified"></span> Not identified to subspecies</label>
+        <label class="filter"><input type="checkbox" data-layer="unsure" checked> <span class="dot unsure"></span> Community report, unsure</label>
+        <label class="filter"><input type="checkbox" id="show-photos" checked> <span class="dot photo"></span> Neighbor photos (<a href="community.html">see all</a>)</label>
+        <label class="filter"><input type="checkbox" id="show-herds" checked> <span class="dot herd"></span> Cow herds</label>
+        <label class="filter"><input type="checkbox" id="show-range" checked> <span class="ring"></span> Grazing range (2 km around each herd)</label>
+        <label class="filter"><input type="checkbox" id="show-old" checked> Include records older than 5 years (shown faded)</label>
+        <p class="small">Small dots are public records from <a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist</a> and <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF</a> (museums, herbaria). Large dots are reports from this site; a solid outline means an expert verified it.</p>
+        <p class="small"><a href="privacy.html">Privacy &amp; community rules</a></p>
+        <details class="disclaimer"><summary><strong>How old is this data?</strong></summary> sightings can be years old. Phragmites may have spread, died back, or been treated since, and some sites were surveyed only once (for example a batch of records from 2009). Treat faded dots as leads to re-check, not current conditions. Not every patch is recorded, and no dot here is a confirmed location of invasive Phragmites unless an expert verified it.</details>
+      </section>
+
+      <section id="herd-panel">
+        <h3>Cow herds</h3>
+        <p class="small">Herds our digital herding project is tracking. The number is how many invasive Phragmites records lie within 2 km of the herd, which is roughly what it can graze.</p>
+        <div id="herd-list" class="herd-list">Loading…</div>
+        <!-- Only shown to signed-in editors and experts. -->
+        <div id="herd-admin" hidden>
+          <button id="herd-btn" class="button small-btn" type="button">Add a herd</button>
+          <form id="herd-form" hidden>
+            <p id="herd-pick-info" class="small"></p>
+            <label>Herd name
+              <input type="text" name="name" maxlength="80" required>
+            </label>
+            <label>Number of cows (optional)
+              <input type="number" name="head_count" min="1" max="10000" inputmode="numeric">
+            </label>
+            <label>What are they doing?
+              <select name="activity" required>
+                <option value="grazing">Grazing</option>
+                <option value="moving">Being moved</option>
+                <option value="resting">Resting</option>
+              </select>
+            </label>
+            <label>Date seen
+              <input type="date" name="seen_on" required>
+            </label>
+            <label>Notes (optional)
+              <textarea name="note" rows="2" maxlength="500"></textarea>
+            </label>
+            <button class="button small-btn" type="submit">Save herd</button>
+            <button class="link-btn" type="button" id="herd-cancel">Cancel</button>
+            <p id="herd-msg" class="small" role="status"></p>
+          </form>
+        </div>
+      </section>
+
+
+
+      <details class="panel-fold">
+        <summary>Share and download</summary>
+        <button id="copy-link" class="link-btn" type="button">Copy link to this view</button><br>
+        <button id="dl-csv" class="link-btn" type="button">Download shown records (CSV)</button><br>
+        <button id="dl-geojson" class="link-btn" type="button">Download shown records (GeoJSON)</button>
+        <p class="small">Downloads follow the checkboxes above. Records come from iNaturalist and GBIF (licensed per record; credit them if you reuse the data). Community report locations are rounded to about 1 km.</p>
+      </details>
+
       <!-- Only shown to signed-in experts (sign in on the Members page). -->
       <section id="expert-section" hidden>
         <h3>Expert verification</h3>
@@ -153,7 +156,7 @@
 
       <form id="map-search" class="map-search" role="search">
         <div class="search-row">
-          <input id="search-input" type="search" placeholder="Search an address or place in Utah"
+          <input id="search-input" type="search" placeholder="Search a place"
                  aria-label="Search an address or place in Utah" autocomplete="off" enterkeyhint="search">
           <button type="submit" aria-label="Search">Search</button>
         </div>

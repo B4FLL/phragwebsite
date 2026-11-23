@@ -74,6 +74,7 @@ async function makeJpeg(page) {
 
     // Copy link reopens the same view.
     await page.evaluate(() => map.setView([39.1234, -111.5678], 10));
+    await page.click(".panel-fold summary"); // "Share and download" starts folded
     await page.click("#copy-link");
     const link = await page.evaluate(() => navigator.clipboard.readText());
     const page2 = await newPage(browser);

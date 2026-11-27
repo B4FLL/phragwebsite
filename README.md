@@ -117,7 +117,7 @@ GitHub switches scheduled jobs off after 60 days with no activity in the reposit
 
 ## Privacy page
 
-`privacy.html` explains what the site collects, who else handles it, and the rules for photos and comments. Signed-in editors can fill in the team's contact email on the page itself. A coach or teacher should read it before the site is shared widely; it was written by students and hasn't been reviewed by a lawyer.
+`privacy.html` explains what the site collects, who else handles it, and the rules for photos and comments. The team's contact email is written into this page and into the **Contact Us** section at the bottom of the home page; changing it means editing both HTML files. A coach or teacher should read it before the site is shared widely; it was written by students and hasn't been reviewed by a lawyer.
 
 ## Refreshing the data
 

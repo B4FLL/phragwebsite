@@ -15,6 +15,7 @@ Website and Utah tracking map for our FIRST LEGO League innovation project on in
 - `community.html`, `community.js`, `community.css` – Neighborhood photo feed with comments and expert tags
 - `supabase/community.sql` – tables, privacy rules and photo storage for the Neighborhood feed
 - `supabase/herds.sql` – the cow herds table for the map (run it after `members.sql`)
+- `review.html`, `review.js`, `review-csv.js`, `review.css` – expert review dashboard (see "Expert review dashboard")
 - `privacy.html` – privacy notice and community rules
 - `favicon.svg` – the site icon in the browser tab
 - `docs/project-handoff.md` – overview for an AI assistant or new developer: how the site fits together, rules, tests, recent changes
@@ -63,6 +64,20 @@ Until step 3 is done the map runs in **demo mode** (reports stay in your own bro
 - Community reports start as **unverified**; experts mark them **verified** or **rejected**. Either decision can be undone. Under the review queue experts see a **Verified reports** list with **Undo approval** and a **Rejected reports** list with **Undo reject** (each shows the 50 most recently filed). Undo returns the report to the queue as unverified and clears the expert note. Deleting a report for good is done in Supabase's Table Editor.
 - **Spam limit:** anyone can report without signing in, so the database allows 6 reports per hour from one connection and 100 per hour overall (`limit_reports` in `supabase/schema.sql`). Each report stores only a one-way hash of the connection, never the address. Re-run `schema.sql` once to turn this on, then run `members.sql` again (see "Connecting the database").
 - Public coordinates for community reports are rounded to ~1 km (the exact point is visible only to experts).
+
+## Expert review dashboard
+
+`review.html` is where approved experts work through many reports. Open it from the map's **Expert verification** section or from the Members page. Anyone else sees a sign-in message, and the database refuses them the data. No database change is needed.
+
+- **Queue:** tabs for To review, Verified and Rejected, with search, a filter by the reporter's guess, and sorting.
+- **Evidence:** a satellite view of the exact spot, public iNaturalist and GBIF records within 1 km, and a warning when another report is within 100 m.
+- **Speed:** the next report opens after each decision. Keys: `J`/`K` next and previous, `V` verify, `R` reject, `U` return to review, `X` tick, `N` note, `/` search. Holding a key down decides only one report.
+- **Batches:** tick several reports to verify, reject or return them together (it asks first). **Undo** appears after every change.
+- **Two experts at once:** a decision is saved only if the report is still in the state you saw. Otherwise it's skipped and the list reloads.
+- **Spreadsheet:** **Download spreadsheet** saves the reports in view as CSV (Excel or Google Sheets). Type `verify`, `reject` or `undo` in the `decision` column, optionally fill `expert_note`, save as CSV, and press **Upload decisions**. A summary is shown before anything changes, and rows changed by someone else since the download are skipped.
+- **Privacy:** the downloaded file has exact locations and reporters' names. Keep it private and delete it afterwards. The spreadsheet never holds a login, so only the signed-in dashboard can change the database. Text that a spreadsheet would run as a formula is neutralised in the download.
+- **Expert notes are public:** they appear on the map.
+- Map reports don't include photos, so many can only be confirmed by a site visit. Skip those instead of guessing.
 
 ## Neighborhood photos
 

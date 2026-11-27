@@ -20,6 +20,7 @@ Read this first if you are an AI agent (or a new developer) picking up this repo
 |---|---|---|
 | `index.html` | Project story: Problem, Research, Solution, Experts, Team, Sources | `cms.js` only |
 | `map.html` | Utah map of Phragmites records, report form, expert review queue, cow herds layer | `map.js`, `map.css` |
+| `review.html` | Expert review dashboard: queue, evidence map, batch actions, spreadsheet download and upload. Experts only | `review-csv.js`, `review.js`, `review.css` |
 | `community.html` ("Neighborhood") | Photo feed with comments, expert tags, filter chips, reporting and moderation | `community.js`, `community.css` |
 | `identify.html` | How to tell invasive from native Phragmites | — |
 | `login.html` ("Members") | Email-link sign-in and member status | `login.js` |

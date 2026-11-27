@@ -20,6 +20,7 @@ async function render() {
     : member.isExpert ? "Expert"
     : "Community member";
   $("status-hint").textContent = hints.join(" ");
+  $("dashboard-link").hidden = !member.isExpert;
   // If they picked Team member or Expert in the sign-in bar but this email lacks that role, say so.
   let asked = null;
   try { asked = localStorage.getItem("phragSignInAs"); localStorage.removeItem("phragSignInAs"); } catch (e) { /* storage blocked */ }

@@ -1,0 +1,107 @@
+/* Expert review dashboard (review.html) */
+.review-page { background: #f4f3ee; }
+.rv { max-width: 1400px; margin: 0 auto; padding: 18px 20px 90px; }
+.rv h1 { margin: 0; font-size: 1.5rem; }
+
+.rv-gate { max-width: 520px; margin: 60px auto; text-align: center; }
+.rv-gate .button { margin-top: 8px; }
+
+.rv-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.rv-sub { margin: 2px 0 0; color: var(--muted); font-size: 0.9rem; }
+.rv-tools { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.rv-btn { padding: 8px 14px; border: 1px solid #c4bfac; border-radius: 8px; background: #fff; color: var(--text); font: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+.rv-btn:hover { border-color: var(--green); }
+.rv-btn:disabled { opacity: 0.5; cursor: wait; }
+.rv-btn.ok { background: var(--green); border-color: var(--green); color: #fff; }
+.rv-btn.bad { background: #fff; border-color: #b23a2e; color: #a3281c; }
+.rv-btn.big { flex: 1 1 130px; padding: 12px; font-size: 1rem; }
+.rv-link { border: 0; background: none; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; padding: 4px 6px; }
+.rv kbd { font: 600 0.72rem ui-monospace, Consolas, monospace; border: 1px solid currentColor; border-radius: 4px; padding: 0 5px; opacity: 0.75; margin-left: 4px; }
+
+.rv-tabs { display: flex; gap: 4px; margin-top: 16px; border-bottom: 2px solid #ddd8c8; overflow-x: auto; }
+.rv-tabs button { border: 0; background: none; font: inherit; font-weight: 600; color: var(--muted); padding: 9px 14px; margin-bottom: -2px; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+.rv-tabs button[aria-selected="true"] { color: var(--green-dark); border-bottom-color: var(--green-dark); }
+.rv-count { display: inline-block; min-width: 1.6em; padding: 0 6px; border-radius: 999px; background: #e7e3d5; font-size: 0.8rem; text-align: center; }
+
+.rv-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.rv-filters input, .rv-filters select, .rv-bulk input, .rv textarea { padding: 8px 10px; border: 1px solid #c4bfac; border-radius: 8px; font: inherit; font-size: 0.92rem; background: #fff; }
+.rv-filters input { flex: 1 1 220px; }
+
+/* Batch bar stays in view while you scroll a long list */
+.rv-bulk { position: sticky; top: 60px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; margin-bottom: 10px; border-radius: 10px; background: var(--green-dark); color: #fff; }
+.rv-bulk input { flex: 1 1 220px; }
+
+.rv-main { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 16px; align-items: start; }
+.rv-list-col, .rv-detail { background: #fff; border: 1px solid #ddd8c8; border-radius: 12px; }
+.rv-list-col { padding-bottom: 6px; }
+.rv-selectall { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #eee9dc; font-size: 0.88rem; color: var(--muted); }
+.rv-list { list-style: none; margin: 0; padding: 0; max-height: calc(100vh - 330px); min-height: 320px; overflow-y: auto; }
+.rv-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #f0ece0; border-left: 4px solid transparent; }
+.rv-row.current { background: #eef5f0; border-left-color: var(--green); }
+.rv-row input { margin-top: 5px; flex: none; }
+.rv-row button { flex: 1; min-width: 0; border: 0; background: none; padding: 0; text-align: left; font: inherit; cursor: pointer; color: var(--text); }
+.rv-row-top { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; font-size: 0.92rem; }
+.rv-row-sub { display: block; font-size: 0.82rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rv-list-col > .rv-btn { display: block; margin: 8px auto 2px; }
+.rv-flag { font-size: 0.72rem; font-weight: 700; color: #8a5a00; background: #fff3cd; border-radius: 999px; padding: 0 8px; white-space: nowrap; }
+.rv-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: #d89a1b; }
+.rv-dot.invasive { background: #c0392b; }
+.rv-dot.native { background: #2a6fb0; }
+
+.rv-map { border-radius: 12px 12px 0 0; }
+.rv-empty { padding: 60px 20px; text-align: center; color: var(--muted); margin: 0; }
+.rv-map { height: clamp(210px, 32vh, 360px); z-index: 0; }
+.rv-detail-pad { padding: 14px 18px 18px; }
+.rv-detail h2 { margin: 0 0 8px; font-size: 1.15rem; }
+.rv-facts { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; margin: 0; font-size: 0.92rem; }
+.rv-facts dt { color: var(--muted); }
+.rv-facts dd { margin: 0; overflow-wrap: anywhere; }
+.rv-evidence { margin: 12px 0; padding: 10px 12px; border-radius: 8px; background: #f6f3ea; font-size: 0.88rem; }
+.rv-evidence p { margin: 2px 0; }
+.rv-note-label { display: block; font-weight: 600; font-size: 0.9rem; }
+.rv-note-label span { font-weight: 400; color: var(--muted); }
+.rv textarea { width: 100%; margin-top: 4px; resize: vertical; }
+.rv-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; }
+.rv-chips button { border: 1px solid #c4bfac; background: #fff; border-radius: 999px; padding: 3px 11px; font: inherit; font-size: 0.8rem; cursor: pointer; }
+/* The decision buttons stay on screen, so there is no scrolling between reports */
+.rv-actions { display: flex; flex-wrap: wrap; gap: 8px; position: sticky; bottom: 0; z-index: 4; margin: 0 -18px -18px; padding: 12px 18px; background: #fff; border-top: 1px solid #eee9dc; border-radius: 0 0 12px 12px; }
+.rv-back { display: none; }
+
+/* At the top, so it never covers the decision buttons */
+.rv-toast { position: fixed; left: 50%; top: 70px; transform: translateX(-50%); z-index: 2000; display: flex; align-items: center; gap: 8px; max-width: calc(100% - 24px); padding: 10px 14px; border-radius: 10px; background: #1d1d1b; color: #fff; font-size: 0.92rem; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); }
+
+.rv-dialog { width: min(560px, calc(100% - 24px)); max-height: 85vh; border: 0; border-radius: 12px; padding: 20px 22px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35); }
+.rv-dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+.rv-dialog h2 { margin-top: 0; }
+.rv-keys { padding-left: 1.2em; }
+.rv-warning { padding: 8px 10px; border-radius: 8px; background: #fff3cd; border: 1px solid #e6cf7a; font-size: 0.9rem; }
+.rv-dialog-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+/* Phones: the list fills the screen and a report opens over it */
+@media (max-width: 860px) {
+  .rv { padding: 12px 10px 90px; }
+  .rv-main { grid-template-columns: 1fr; }
+  .rv-list { max-height: none; min-height: 0; }
+  .rv-detail { display: none; }
+  .rv-detail.open { display: block; position: fixed; inset: 0; z-index: 1500; border-radius: 0; overflow-y: auto; }
+  .rv-back { display: block; margin: 8px 10px; }
+  .rv-map { height: 36vh; }
+  .rv-actions { margin: 0 -18px -18px; border-radius: 0; }
+  .rv-toast { top: 8px; width: max-content; }
+  .rv-btn.big { flex-basis: 40%; }
+  .rv kbd { display: none; }
+}
+
+/* Wide screens: list, map and details side by side, so one report fits on one screen */
+@media (min-width: 1150px) {
+  .rv-main { grid-template-columns: 300px 1fr; }
+  .rv-list { max-height: max(420px, calc(100vh - 305px)); }
+  #detail-body:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1fr) 390px; height: max(460px, calc(100vh - 262px)); }
+  .rv-map { height: 100%; border-radius: 12px 0 0 12px; }
+  .rv-detail-pad { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; padding: 14px 16px 0; }
+  .rv-detail-pad > * { flex: none; }
+  .rv-evidence { margin: 10px 0; }
+  .rv-actions { margin: auto -16px 0; padding: 10px 16px; border-radius: 0 0 12px 0; }
+  .rv-btn.big { flex: 1 1 140px; padding: 10px; }
+}

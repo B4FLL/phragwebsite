@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expert Review</title>
+  <meta name="description" content="Dashboard for approved experts to review Phragmites reports.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="review.css">
+</head>
+<body class="review-page">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">Phragmites Project</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav">
+        <a href="index.html#problem">Our Project</a>
+        <a href="index.html#solution">Our Solution</a>
+        <a href="map.html">Map</a>
+        <a href="community.html">Neighborhood</a>
+        <a href="identify.html">Identify</a>
+        <a href="index.html#experts">Experts</a>
+        <a href="index.html#team">Team</a>
+        <a href="login.html">Members</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="rv">
+    <div id="gate" class="rv-gate">
+      <h1>Expert review</h1>
+      <p id="gate-msg" role="status">Checking your access…</p>
+      <p id="gate-actions" hidden><a class="button" href="login.html">Sign in on the Members page</a></p>
+    </div>
+
+    <div id="app" hidden>
+      <div class="rv-top">
+        <div>
+          <h1>Expert review</h1>
+          <p class="rv-sub"><span id="who"></span> · <a href="map.html">Public map</a></p>
+        </div>
+        <div class="rv-tools">
+          <button type="button" id="refresh-btn" class="rv-btn">Refresh</button>
+          <button type="button" id="export-btn" class="rv-btn">Download spreadsheet</button>
+          <button type="button" id="import-btn" class="rv-btn">Upload decisions</button>
+          <input type="file" id="import-file" accept=".csv,text/csv" hidden>
+          <button type="button" id="help-btn" class="rv-btn" aria-label="Help and keyboard shortcuts">Help</button>
+        </div>
+      </div>
+
+      <div class="rv-tabs" role="tablist" aria-label="Report status">
+        <button type="button" role="tab" data-tab="unverified" aria-selected="true">To review <span class="rv-count" id="count-unverified">0</span></button>
+        <button type="button" role="tab" data-tab="verified" aria-selected="false">Verified <span class="rv-count" id="count-verified">0</span></button>
+        <button type="button" role="tab" data-tab="rejected" aria-selected="false">Rejected <span class="rv-count" id="count-rejected">0</span></button>
+      </div>
+
+      <div class="rv-filters">
+        <input type="search" id="search" placeholder="Search notes or names" aria-label="Search notes or names">
+        <select id="guess" aria-label="Filter by the reporter's guess">
+          <option value="">All guesses</option>
+          <option value="invasive">Guessed invasive</option>
+          <option value="native">Guessed native</option>
+          <option value="unsure">Not sure</option>
+        </select>
+        <select id="sort" aria-label="Sort order">
+          <option value="oldest">Oldest filed first</option>
+          <option value="newest">Newest filed first</option>
+          <option value="seen">Recently seen first</option>
+          <option value="north">North to south</option>
+        </select>
+      </div>
+
+      <div id="bulk" class="rv-bulk" hidden>
+        <strong id="bulk-count"></strong>
+        <input type="text" id="bulk-note" maxlength="1000" placeholder="Note for all selected (optional, shown publicly)" aria-label="Note for all selected reports">
+        <button type="button" class="rv-btn ok" data-bulk="verified">Verify selected</button>
+        <button type="button" class="rv-btn bad" data-bulk="rejected">Reject selected</button>
+        <button type="button" class="rv-btn" data-bulk="unverified">Return to review</button>
+        <button type="button" class="rv-link" id="bulk-clear">Clear</button>
+      </div>
+
+      <div class="rv-main">
+        <section class="rv-list-col" aria-label="Reports">
+          <label class="rv-selectall"><input type="checkbox" id="select-all"> <span id="list-summary"></span></label>
+          <ul id="list" class="rv-list"></ul>
+          <button type="button" id="more-btn" class="rv-btn" hidden>Show more</button>
+        </section>
+
+        <section id="detail" class="rv-detail" aria-label="Selected report">
+          <p id="detail-empty" class="rv-empty">Nothing selected.</p>
+          <div id="detail-body" hidden>
+            <button type="button" id="back-btn" class="rv-btn rv-back">← Back to list</button>
+            <div id="detail-map" class="rv-map" aria-label="Map around the selected report"></div>
+            <div class="rv-detail-pad">
+              <h2 id="detail-title"></h2>
+              <dl id="detail-facts" class="rv-facts"></dl>
+              <div id="detail-evidence" class="rv-evidence"></div>
+
+              <label class="rv-note-label" for="note">Expert note <span>(shown publicly on the map)</span></label>
+              <textarea id="note" rows="2" maxlength="1000"></textarea>
+              <div id="quick-notes" class="rv-chips"></div>
+
+              <div class="rv-actions">
+                <button type="button" class="rv-btn big ok" data-act="verified">Verify <kbd>V</kbd></button>
+                <button type="button" class="rv-btn big bad" data-act="rejected">Reject <kbd>R</kbd></button>
+                <button type="button" class="rv-btn big" data-act="unverified">Return to review <kbd>U</kbd></button>
+                <button type="button" class="rv-btn big" id="skip-btn">Skip <kbd>J</kbd></button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div id="toast" class="rv-toast" role="status" hidden>
+      <span id="toast-text"></span>
+      <button type="button" id="toast-undo" class="rv-link">Undo</button>
+      <button type="button" id="toast-close" class="rv-link" aria-label="Dismiss message">✕</button>
+    </div>
+
+    <dialog id="help-dialog" class="rv-dialog">
+      <h2>How to review</h2>
+      <p>Pick a report, check the map and the evidence, then <strong>Verify</strong> or <strong>Reject</strong>. The next one opens automatically. Verify means you, as an expert, are confirming the report. If you can't tell, skip it.</p>
+      <h3>Keyboard shortcuts</h3>
+      <ul class="rv-keys">
+        <li><kbd>J</kbd> or <kbd>↓</kbd> next report</li>
+        <li><kbd>K</kbd> or <kbd>↑</kbd> previous report</li>
+        <li><kbd>V</kbd> verify · <kbd>R</kbd> reject · <kbd>U</kbd> return to review</li>
+        <li><kbd>X</kbd> tick or untick for batch actions</li>
+        <li><kbd>N</kbd> write a note · <kbd>/</kbd> search · <kbd>Esc</kbd> leave a text box</li>
+      </ul>
+      <h3>Working in a spreadsheet</h3>
+      <ol>
+        <li><strong>Download spreadsheet</strong> saves the reports in the current tab (after your search and filter).</li>
+        <li>Open it in Excel or Google Sheets. In the <strong>decision</strong> column type <code>verify</code>, <code>reject</code> or <code>undo</code>. Leave it blank to skip. You can fill in <strong>expert_note</strong>.</li>
+        <li>Save as CSV, then press <strong>Upload decisions</strong>. You'll see a summary before anything changes.</li>
+      </ol>
+      <p class="rv-warning">The spreadsheet contains exact locations and reporters' names. Keep it private and delete it when you're done.</p>
+      <form method="dialog"><button class="rv-btn">Close</button></form>
+    </dialog>
+
+    <dialog id="import-dialog" class="rv-dialog">
+      <h2>Check before applying</h2>
+      <div id="import-summary"></div>
+      <div class="rv-dialog-actions">
+        <button type="button" id="import-apply" class="rv-btn ok">Apply changes</button>
+        <button type="button" id="import-cancel" class="rv-btn">Cancel</button>
+      </div>
+    </dialog>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="script.js"></script>
+  <script src="review-csv.js"></script>
+  <script src="review.js"></script>
+</body>
+</html>

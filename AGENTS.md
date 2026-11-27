@@ -1,5 +1,7 @@
 # Repository Guidelines
 
+Start with `docs/project-handoff.md` for the full overview and recent change history.
+
 ## Project Structure & Module Organization
 Static site (no bundler, no package.json) hosted on GitHub Pages, backed by Supabase. Pages are plain HTML + vanilla JS loaded via `<script>` tags; the Supabase client comes from a CDN global (`window.supabase`).
 

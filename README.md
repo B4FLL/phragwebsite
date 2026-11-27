@@ -60,7 +60,7 @@ Until step 3 is done the map runs in **demo mode** (reports stay in your own bro
 ## How the data works
 
 - GBIF records are colored by subspecies: invasive (*australis*), native (*americanus*), or unspecified (most records).
-- Community reports start as **unverified**; experts mark them **verified** or **rejected**. A rejected report can be brought back: experts see a **Rejected reports** list under the review queue with an **Undo reject** button (it returns the report to the queue as unverified).
+- Community reports start as **unverified**; experts mark them **verified** or **rejected**. Either decision can be undone. Under the review queue experts see a **Verified reports** list with **Undo approval** and a **Rejected reports** list with **Undo reject** (each shows the 50 most recently filed). Undo returns the report to the queue as unverified and clears the expert note. Deleting a report for good is done in Supabase's Table Editor.
 - **Spam limit:** anyone can report without signing in, so the database allows 6 reports per hour from one connection and 100 per hour overall (`limit_reports` in `supabase/schema.sql`). Each report stores only a one-way hash of the connection, never the address. Re-run `schema.sql` once to turn this on, then run `members.sql` again (see "Connecting the database").
 - Public coordinates for community reports are rounded to ~1 km (the exact point is visible only to experts).
 

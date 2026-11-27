@@ -33,9 +33,9 @@ const store = {
     if (error) throw error;
     return data;
   },
-  async listRejected() {
-    if (demo) return JSON.parse(localStorage.getItem(DEMO_KEY) || "[]").filter((r) => r.status === "rejected");
-    const { data, error } = await sb.from("reports").select("*").eq("status", "rejected").order("created_at", { ascending: false }).limit(50);
+  async listByStatus(status) { // experts only; the 50 most recently filed
+    if (demo) return JSON.parse(localStorage.getItem(DEMO_KEY) || "[]").filter((r) => r.status === status).reverse().slice(0, 50);
+    const { data, error } = await sb.from("reports").select("*").eq("status", status).order("created_at", { ascending: false }).limit(50);
     if (error) throw error;
     return data;
   },
@@ -825,7 +825,7 @@ async function renderQueue() {
         buttons.forEach((b) => (b.disabled = true)); // no double-sends while saving
         try {
           await store.setStatus(r.id, status, note.value.trim() || null);
-          renderQueue(); renderRejected(); load();
+          renderQueue(); renderVerified(); renderRejected(); load();
         } catch (err) {
           console.error(err);
           buttons.forEach((b) => (b.disabled = false));
@@ -845,42 +845,57 @@ async function renderQueue() {
   }
 }
 
-// Rejected reports vanish from the map and the queue, so list them here with an Undo.
-// Undo puts the report back as unverified (it shows on the map again and returns to the queue).
-async function renderRejected() {
-  const box = $("rejected-list");
+// Reports that have already been decided are listed with an Undo, in case of a wrong click.
+// Undo puts the report back as unverified (it shows on the map as unverified and returns to the
+// queue). It also clears the expert note.
+async function renderDecided({ fetchItems, boxId, countId, emptyText, errorText, undoLabel }) {
+  const box = $(boxId);
   let items;
-  try { items = await store.listRejected(); }
-  catch (e) { console.error(e); box.textContent = "Couldn't load rejected reports."; return; }
-  $("rejected-count").textContent = items.length;
+  try { items = await fetchItems(); }
+  catch (e) { console.error(e); box.textContent = errorText; return; }
+  $(countId).textContent = items.length;
   box.textContent = "";
-  if (!items.length) { box.textContent = "No rejected reports."; return; }
+  if (!items.length) { box.textContent = emptyText; return; }
   for (const r of items) {
     const item = document.createElement("div");
     item.className = "queue-item";
     row(item, "Guess", LABELS[r.id_guess === "unsure" ? "unsure" : r.id_guess]);
     row(item, "Seen", `${r.observed_on} at ${(+r.lat).toFixed(4)}, ${(+r.lng).toFixed(4)}`);
+    if (r.notes) row(item, "Notes", r.notes);
     if (r.expert_note) row(item, "Expert note", r.expert_note);
     const undo = document.createElement("button");
-    undo.type = "button"; undo.textContent = "Undo reject";
+    undo.type = "button"; undo.textContent = undoLabel;
     undo.addEventListener("click", async () => {
       undo.disabled = true;
       try {
         await store.setStatus(r.id, "unverified", null);
-        renderRejected(); renderQueue(); load();
+        renderVerified(); renderRejected(); renderQueue(); load();
       } catch (err) {
         console.error(err);
         undo.disabled = false;
         undo.textContent = "Couldn't undo, try again";
       }
     });
+    const go = document.createElement("button");
+    go.type = "button"; go.textContent = "Show";
+    go.addEventListener("click", () => map.setView([r.lat, r.lng], 14));
     const actions = document.createElement("div");
     actions.className = "queue-actions";
-    actions.appendChild(undo);
+    actions.append(undo, go);
     item.appendChild(actions);
     box.appendChild(item);
   }
 }
+
+const renderVerified = () => renderDecided({
+  fetchItems: () => store.listByStatus("verified"), boxId: "verified-list", countId: "verified-count",
+  emptyText: "No verified reports.", errorText: "Couldn't load verified reports.", undoLabel: "Undo approval",
+});
+// Rejected reports vanish from the map and the queue, so this list is the only way to reach them here.
+const renderRejected = () => renderDecided({
+  fetchItems: () => store.listByStatus("rejected"), boxId: "rejected-list", countId: "rejected-count",
+  emptyText: "No rejected reports.", errorText: "Couldn't load rejected reports.", undoLabel: "Undo reject",
+});
 
 // Experts see the review queue; everyone else never sees this section.
 (async function showExpertQueue() {
@@ -895,6 +910,7 @@ async function renderRejected() {
     $("expert-section").hidden = false;
     $("expert-email").textContent = member.email;
     renderQueue();
+    renderVerified();
     renderRejected();
   } catch (e) { console.error(e); }
 })();

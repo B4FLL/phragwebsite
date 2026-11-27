@@ -622,12 +622,13 @@ herdForm.addEventListener("submit", async (e) => {
 });
 
 // ---------- Legend ----------
-// What every color and shape on the map means. Collapsed on phones so it doesn't cover the map.
+// What every color and shape on the map means. It sits bottom right, away from the map buttons,
+// and starts open only on a big screen so it doesn't cover the map.
 L.Control.Legend = L.Control.extend({
-  options: { position: "bottomleft" },
+  options: { position: "bottomright" },
   onAdd() {
     const box = L.DomUtil.create("details", "map-legend");
-    box.open = !window.matchMedia("(max-width: 760px)").matches;
+    box.open = window.matchMedia("(min-width: 761px) and (min-height: 860px)").matches;
     const title = L.DomUtil.create("summary", "", box);
     title.textContent = "Legend";
     const list = L.DomUtil.create("ul", "", box);

@@ -3,26 +3,35 @@
 
 .map-layout {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: minmax(300px, 380px) 1fr;
   height: calc(100vh - 60px - var(--bar-h, 0px));
 }
 
 .panel {
   overflow-y: auto;
-  padding: 16px 20px 40px;
+  padding: 22px 24px 48px;
   background: #fff;
   border-right: 1px solid #ddd8c8;
 }
 
-.panel h1 { margin: 0 0 4px; font-size: 1.4rem; }
-.panel h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+.panel h1 { margin: 0 0 8px; font-size: 1.4rem; }
+.panel h3 { margin: 0 0 10px; font-size: 1.05rem; }
+/* A thin line and some air between the panel's sections */
+.panel > section + section { margin-top: 24px; padding-top: 22px; border-top: 1px solid #ece8da; }
 .panel label { display: block; margin: 10px 0; font-size: 0.9rem; font-weight: 600; }
 .panel input[type="text"], .panel input[type="date"], .panel input[type="email"],
 .panel select, .panel textarea {
   display: block; width: 100%; margin-top: 4px; padding: 8px;
   font: inherit; font-weight: 400; border: 1px solid #bdb8a5; border-radius: 6px;
 }
-.panel .filter { font-weight: 400; display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.panel .filter { font-weight: 400; display: flex; align-items: center; gap: 10px; margin: 0; padding: 5px 0; line-height: 1.4; }
+.panel .filter input { flex: none; margin: 0; width: 16px; height: 16px; }
+.panel .small { line-height: 1.55; margin: 10px 0; }
+
+/* On wide screens the sign-in bar fits on one line here, which leaves more room for the map */
+@media (min-width: 1100px) {
+  .map-page .signin-bar { flex-wrap: nowrap; justify-content: center; gap: 20px; padding: 10px 56px 10px 24px; }
+}
 .small { font-size: 0.85rem; color: var(--muted); margin: 6px 0; }
 .muted-line { margin: 0; color: var(--muted); font-size: 0.9rem; }
 .hp { position: absolute; left: -9999px; }
@@ -108,7 +117,8 @@
 /* Legend over the map */
 .map-legend { background: #fff; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,.35); font-size: 0.82rem; line-height: 1.3; max-width: 230px; }
 .map-legend summary { cursor: pointer; font-weight: 700; padding: 7px 10px; }
-.map-legend ul { list-style: none; margin: 0; padding: 0 10px 8px; }
+/* Scrolls inside itself if the map is short, so it never runs over the buttons or search box */
+.map-legend ul { list-style: none; margin: 0; padding: 0 10px 8px; max-height: 36vh; overflow-y: auto; }
 .map-legend li { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
 .map-legend .sw { width: 14px; height: 14px; border-radius: 50%; flex: none; box-sizing: border-box; }
 .map-legend .sw.small { width: 8px; height: 8px; margin: 3px; }

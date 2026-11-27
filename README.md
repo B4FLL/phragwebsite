@@ -88,7 +88,7 @@ The map shows where our herds are and how they relate to Phragmites.
 - **Cow herds layer:** each herd is a cow marker with a dashed ring (2 km, roughly how far it can graze). Tick or untick "Cow herds" and "Grazing range" in **Show on map**. The choice is remembered.
 - **Connection to Phragmites:** each herd's popup and its entry in the **Cow herds** panel say how many invasive Phragmites records lie within 2 km, or how far away the nearest one is. The count uses the records currently loaded (iNaturalist, GBIF and community reports).
 - **Adding herds:** signed-in editors and experts see **Add a herd** in the panel: name, number of cows, activity, date and notes, then click the map for the spot. They can also **Remove herd** from a herd's popup. Everyone else can only look. This needs `supabase/herds.sql` to be run once; until then the herd list says it couldn't load. In demo mode herds stay in the browser.
-- **Legend:** the box over the map explains every color and shape. It starts closed on phones.
+- **Legend:** the box at the bottom right of the map explains every color and shape. It starts open only on large screens, so it doesn't cover the map.
 - **Herd locations are shown exactly as entered.** Put the herd where the grazing area is, not at a private home or corral.
 
 ## Experts' photos and social links

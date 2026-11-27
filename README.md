@@ -94,7 +94,7 @@ The map shows where our herds are and how they relate to Phragmites.
 ## Experts' photos and social links
 
 - Each card in **Experts We Talked To** has a photo box. Editors add a photo with **Edit page**, same as other photos. Empty boxes are hidden from visitors.
-- The footer has social links (Instagram, Facebook, YouTube, TikTok). Editors press **Edit page**, click a name, and type the https:// address. Links with no address stay hidden. Only https:// addresses are accepted. These links appear on the home, identify, privacy, Neighborhood and Members pages.
+- The footer has social links (Instagram, Facebook, YouTube, TikTok). Editors press **Edit page**, click a name, and type the https:// address. The team's Instagram and Facebook are built in (taken from https://b4fll.wordpress.com/); an address saved by an editor replaces the built-in one, and saving an empty address removes the link. Links with no address stay hidden. Only https:// addresses are accepted. These links appear on the home, identify, privacy, Neighborhood and Members pages.
 
 ## Map extras
 

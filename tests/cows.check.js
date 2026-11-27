@@ -102,8 +102,8 @@ const loaded = (page) => page.waitForFunction(() => document.getElementById("sta
     const visitor = await newPage(browser);
     await visitor.goto(URL + "/index.html");
     await visitor.waitForTimeout(500);
-    check("Empty expert photo slots and social links are hidden from visitors",
-      (await visitor.locator('[data-edit-img="expert-1-photo"]').isHidden()) && (await visitor.locator(".social li:visible").count()) === 0);
+    check("Empty expert photo slots and links with no address are hidden; the two built-in links show",
+      (await visitor.locator('[data-edit-img="expert-1-photo"]').isHidden()) && (await visitor.locator(".social li:visible").count()) === 2);
     await visitor.context().close();
 
     const page = await newPage(browser, { member: true });
@@ -127,7 +127,7 @@ const loaded = (page) => page.waitForFunction(() => document.getElementById("sta
     await page.reload();
     await page.waitForTimeout(500);
     const shown = await page.evaluate(() => [...document.querySelectorAll(".social li")].filter((li) => !li.hidden).map((li) => li.firstElementChild.textContent + " " + li.firstElementChild.href));
-    check("Saved social links show for visitors; the others stay hidden", shown.length === 2 && /Instagram https:\/\/www\.instagram\.com\/phragproject/.test(shown[0]) && /YouTube/.test(shown[1]), shown.join(" | "));
+    check("Saved social links replace or add to the built-in ones; the others stay hidden", shown.length === 3 && /Instagram https:\/\/www\.instagram\.com\/phragproject/.test(shown[0]) && /Facebook/.test(shown[1]) && /YouTube/.test(shown[2]), shown.join(" | "));
     await page.screenshot({ path: `${OUT}/cows-footer.png`, clip: { x: 0, y: (await page.evaluate(() => document.body.scrollHeight)) - 160, width: 1280, height: 160 }, fullPage: true });
     await page.context().close();
   }

@@ -2,7 +2,7 @@
 //   <p data-edit="some-key">   plain text anyone can read; members can edit it
 //   <figure data-edit-img="some-key"><img alt=""></figure>   a photo members can replace
 //   <li hidden><a data-edit-url="some-key">Name</a></li>   a link whose web address members can set
-//     (the item stays hidden from visitors until an https:// address is saved)
+//     (an href in the HTML is the default; with no address the item is hidden from visitors)
 // Everyone sees saved edits. Signed-in editors also get an "Edit page" bar.
 // Text is always written with textContent, never as HTML, so edits can't inject markup.
 (function () {
@@ -96,7 +96,10 @@
     }
     for (const a of urlEls) {
       const key = a.dataset.editUrl;
-      original[key] = safeLink(content[key]) ? content[key] : "";
+      // Like text: the address written in the HTML is the default until an editor saves one.
+      // A saved empty address means an editor removed the link.
+      const value = key in content ? content[key] : a.getAttribute("href");
+      original[key] = safeLink(value) ? value : "";
       if (original[key]) a.href = original[key]; else a.removeAttribute("href");
     }
     hideEmpty();

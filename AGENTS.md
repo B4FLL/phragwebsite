@@ -24,4 +24,4 @@ No linter, formatter, or type checker is configured. Match existing style: plain
 There is no automated test suite. Verify changes manually in a local server, in both demo mode (empty `config.js` values) and connected mode. For layout bugs, `tests/mobile-menu.check.js` is a Playwright phone-width check; see `docs/testing.md` for results and how to run it.
 
 ## Commit & Pull Request Guidelines
-History uses short, imperative, capitalized subjects without prefixes (e.g. "Fix community views: compute expert tag inline so visitors can read them"). Work is committed directly to `main`; there is no PR template. Update `README.md` when behavior, setup steps or SQL files change.
+History uses short, imperative, capitalized subjects without prefixes (e.g. "Fix community views: compute expert tag inline so visitors can read them"). Use one new branch per task, then merge it into `main`, push, and delete the branch when asked. Commit only when asked. There is no PR template. Update `README.md` when behavior, setup steps or SQL files change.

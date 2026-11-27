@@ -47,13 +47,13 @@ Read this first if you are an AI agent (or a new developer) picking up this repo
 
 ### Database (`supabase/*.sql`)
 
-Run the files in this order: `schema` → `cms` → `members` → `community` → `herds`. All of them are safe to re-run.
+Run the files in this order: `schema` → `cms` → `members` → `community` → `herds`. All of them are safe to re-run, with one catch: **after re-running `schema` or `cms`, run `members` again.** Those two recreate permission rules that check only the old `experts` / `editors` user-ID tables, overwriting the `is_expert()` / `is_editor()` rules that `members` installs. Until then, email-list experts can't review reports and email-list editors can't save edits.
 
 | File | Contents |
 |---|---|
 | `schema.sql` | `reports` (map sightings), `experts`, the `public_reports` view (coordinates rounded to ~1 km for the public), and the `limit_reports()` trigger (6 per hour per hashed connection, 100 per hour overall; uses the `submitter_hash` column) |
 | `cms.sql` | `site_content`, `site_content_history` and the `log_site_content()` trigger, the `site-images` bucket, and a legacy `editors` table |
-| `members.sql` | `member_emails` (email + role `editor` or `expert`) and the `is_editor()` / `is_expert()` functions. Roles come from this table only. |
+| `members.sql` | `member_emails` (email + role `editor` or `expert`) and the `is_editor()` / `is_expert()` functions. New roles go in this table, but the functions also still accept the old `editors` / `experts` tables, so removing someone means checking all three. |
 | `community.sql` | `posts`, `comments`, `flags`, `is_moderator()` (expert or editor), rate-limit triggers, the `public_posts` / `public_comments` views (with an inline expert tag), the **private** `community-photos` bucket, and `photo_is_visible(path)` so only visible posts' photos can be read |
 | `herds.sql` | `cow_herds`. Anyone can read it; editors and experts can insert and delete. |
 
@@ -180,8 +180,7 @@ Everything below is merged into `main` and pushed (the latest feature commit is 
 ## 7. Open items and next steps
 
 - **Waiting on the team (cannot be done from code):**
-  - Re-run `schema.sql`, `community.sql` and `herds.sql` in Supabase. This turns on the report spam limit and private photo storage.
-  - Run the "Refresh map data" workflow once from the Actions tab.
+  - Re-run `schema.sql`, then `members.sql`, then `community.sql` in Supabase. This turns on the report spam limit, private photo storage and the Report button. (On 2026-11-27 the `cow_herds` table already existed, but the `flags` table from `community.sql` did not.)
   - Check that photos load and that a hidden photo's old link stops working.
   - Fill in the placeholder text and photos through Edit page.
   - Have a coach review `privacy.html`.

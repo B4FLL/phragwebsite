@@ -47,7 +47,9 @@ In PowerShell, any static server works; VS Code's "Live Server" extension is the
 GitHub Pages only serves static files, so community reports are stored in Supabase (free tier).
 
 1. Make a project at supabase.com.
-2. **SQL Editor**: paste and run `supabase/schema.sql`, then run `supabase/cms.sql` as a second query, then `supabase/members.sql` as a third, then `supabase/community.sql` as a fourth, then `supabase/herds.sql` as a fifth (cow herds on the map). After updating the site, re-run `schema.sql` (report spam limit) and `community.sql` (private photo storage) once; they are safe to re-run.
+2. **SQL Editor**: paste and run `supabase/schema.sql`, then run `supabase/cms.sql` as a second query, then `supabase/members.sql` as a third, then `supabase/community.sql` as a fourth, then `supabase/herds.sql` as a fifth (cow herds on the map). After updating the site, re-run `schema.sql` (report spam limit), then `members.sql`, then `community.sql` (private photo storage) once; they are safe to re-run.
+
+   **Whenever you re-run `schema.sql` or `cms.sql`, run `members.sql` again afterwards.** Those two scripts reset some permission rules to the old user-ID tables, so people who are experts or editors only through the email list lose the ability to review reports or save edits until `members.sql` restores them.
 3. **Project Settings > API**: copy the Project URL and the `anon` public key into `config.js`.
 4. **Authentication > URL Configuration**: set Site URL to your GitHub Pages address.
 5. Add members (see "Members and editing" below).
@@ -59,7 +61,7 @@ Until step 3 is done the map runs in **demo mode** (reports stay in your own bro
 
 - GBIF records are colored by subspecies: invasive (*australis*), native (*americanus*), or unspecified (most records).
 - Community reports start as **unverified**; experts mark them **verified** or **rejected**. A rejected report can be brought back: experts see a **Rejected reports** list under the review queue with an **Undo reject** button (it returns the report to the queue as unverified).
-- **Spam limit:** anyone can report without signing in, so the database allows 6 reports per hour from one connection and 100 per hour overall (`limit_reports` in `supabase/schema.sql`). Each report stores only a one-way hash of the connection, never the address. Re-run `schema.sql` once to turn this on.
+- **Spam limit:** anyone can report without signing in, so the database allows 6 reports per hour from one connection and 100 per hour overall (`limit_reports` in `supabase/schema.sql`). Each report stores only a one-way hash of the connection, never the address. Re-run `schema.sql` once to turn this on, then run `members.sql` again (see "Connecting the database").
 - Public coordinates for community reports are rounded to ~1 km (the exact point is visible only to experts).
 
 ## Neighborhood photos
@@ -140,7 +142,7 @@ Members sign in at `login.html` with an email link. There are two roles:
 
 Emails can be typed in any capitalization. The sign-in link proves the person owns the address, so only that email can use the role.
 
-**Removing a member:** delete their row from `member_emails`. They lose the role the next time the page checks (immediately on their next page load).
+**Removing a member:** delete their row from `member_emails`. If they were ever added to the older `editors` or `experts` tables (by user ID), delete them there too, because those still grant the role. They lose it on their next page load.
 
 **Editing the site:** sign in, open any page, and press **Edit page** in the bar at the bottom. Click any dashed text to type; click a photo box to upload a photo; press **Save changes**. Changes go live for everyone right away, with no GitHub push.
 

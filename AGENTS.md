@@ -1,6 +1,6 @@
 # Repository Guidelines
 
-Start with `docs/project-handoff.md` for the full overview and recent change history, then `docs/agent-handoff.md` for the status on 2026-11-27: what has been checked and what is still open.
+Start with `docs/project-handoff.md`: the full overview, what has been checked, change history and open items.
 
 ## Project Structure & Module Organization
 Static site (no bundler, no package.json) hosted on GitHub Pages, backed by Supabase. Pages are plain HTML + vanilla JS loaded via `<script>` tags; the Supabase client comes from a CDN global (`window.supabase`).

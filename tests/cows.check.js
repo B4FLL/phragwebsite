@@ -117,7 +117,9 @@ const loaded = (page) => page.waitForFunction(() => document.getElementById("sta
     page.removeAllListeners("dialog");
     page.once("dialog", (d) => d.accept("javascript:alert(1)"));
     await page.click('[data-edit-url="social-instagram"]');
-    check("A javascript: address is refused", (await page.textContent(".cms-status")).includes("https://") && !(await page.getAttribute('[data-edit-url="social-instagram"]', "href")));
+    // Instagram has a built-in address now, so the check is that it isn't replaced by the javascript: one.
+    const igHref = await page.getAttribute('[data-edit-url="social-instagram"]', "href");
+    check("A javascript: address is refused", (await page.textContent(".cms-status")).includes("https://") && !/^javascript:/i.test(igHref || ""), igHref);
 
     page.once("dialog", (d) => d.accept("https://www.instagram.com/phragproject"));
     await page.click('[data-edit-url="social-instagram"]');

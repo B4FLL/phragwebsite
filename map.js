@@ -84,7 +84,8 @@ const herdStore = {
 
 // ---------- Map ----------
 // leaflet-rotate adds bearing support; touchRotate lets phones twist with two fingers.
-const map = L.map("map", { rotate: true, bearing: 0, touchRotate: true, rotateControl: false }).setView([39.3, -111.6], 7);
+// minZoom 5 keeps the whole western US in reach but stops zooming out so far that the world repeats.
+const map = L.map("map", { rotate: true, bearing: 0, touchRotate: true, rotateControl: false, minZoom: 5 }).setView([39.3, -111.6], 7);
 const street = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 18,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',

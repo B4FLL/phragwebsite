@@ -148,7 +148,7 @@
   let detailMap = null, detailLayer = null;
   function initMap() {
     if (detailMap) return;
-    detailMap = L.map("detail-map").setView([39.3, -111.6], 7);
+    detailMap = L.map("detail-map", { minZoom: 5 }).setView([39.3, -111.6], 7);
     const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       { maxZoom: 18, attribution: "Tiles &copy; Esri, Maxar, Earthstar Geographics" }).addTo(detailMap);
     const street = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",

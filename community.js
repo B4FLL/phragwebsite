@@ -482,7 +482,7 @@ function setPin(lat, lng, note) {
 
 function initPickMap() {
   if (pickMap) { pickMap.invalidateSize(); return; }
-  pickMap = L.map("pick-map").setView([39.3, -111.6], 6);
+  pickMap = L.map("pick-map", { minZoom: 5 }).setView([39.3, -111.6], 6);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(pickMap);

@@ -53,6 +53,20 @@
       if (error) throw error;
       if (!data.length) throw { code: "STALE" };
     },
+    // Permanently deletes a report, only if it is still rejected (the database allows nothing else,
+    // see supabase/members.sql). Throws { code: "STALE" } if it was already gone or changed.
+    async removeRejected(id) {
+      if (demo) {
+        const all = readDemo();
+        const left = all.filter((x) => !(x.id === id && x.status === "rejected"));
+        if (left.length === all.length) throw { code: "STALE" };
+        localStorage.setItem(DEMO_KEY, JSON.stringify(left));
+        return;
+      }
+      const { data, error } = await sb.from("reports").delete().eq("id", id).eq("status", "rejected").select("id");
+      if (error) throw error;
+      if (!data.length) throw { code: "STALE" };
+    },
   };
 
   // ---------- State ----------
@@ -140,6 +154,7 @@
     $("bulk").hidden = !n;
     $("bulk-count").textContent = `${n} selected`;
     document.querySelectorAll("[data-bulk]").forEach((b) => (b.hidden = b.dataset.bulk === tab));
+    $("bulk-delete").hidden = tab !== "rejected";
     const shown = visible().slice(0, shownLimit);
     $("select-all").checked = shown.length > 0 && shown.every((r) => selected.has(r.id));
   }
@@ -190,6 +205,7 @@
 
     $("note").value = drafts.has(r.id) ? drafts.get(r.id) : r.expert_note || "";
     document.querySelectorAll("[data-act]").forEach((b) => (b.hidden = b.dataset.act === r.status));
+    $("delete-btn").hidden = r.status !== "rejected";
 
     initMap();
     detailLayer.clearLayers();
@@ -224,7 +240,7 @@
   // ---------- Decisions ----------
   function setBusy(on) {
     busy = on;
-    document.querySelectorAll("[data-act], [data-bulk], #import-apply, #refresh-btn, #toast-undo").forEach((b) => (b.disabled = on));
+    document.querySelectorAll("[data-act], [data-bulk], #delete-btn, #bulk-delete, #import-apply, #refresh-btn, #toast-undo").forEach((b) => (b.disabled = on));
   }
 
   // changes: [{ report, status, note }]. Saved one at a time; reports what worked.
@@ -285,6 +301,40 @@
     const shared = $("bulk-note").value.trim();
     await apply(chosen.map((r) => ({ report: r, status, note: status === "unverified" ? null : shared || r.expert_note || null })));
     $("bulk-note").value = "";
+    renderList();
+    renderDetail();
+  }
+
+  // Deleting can't be undone, so it always asks first and never joins the Undo list.
+  async function deleteForever(list) {
+    list = list.filter((r) => r.status === "rejected");
+    if (busy || !list.length) return;
+    const many = list.length > 1;
+    if (!confirm(`Delete ${many ? list.length + " rejected reports" : "this rejected report"} for good?\n\n` +
+      `${many ? "They" : "It"} can't be brought back. Use Return to review instead if ${many ? "any" : "it"} might be real.`)) return;
+    setBusy(true);
+    let gone = 0, stale = 0, failed = 0;
+    for (const r of list) {
+      try {
+        await store.removeRejected(r.id);
+        reports = reports.filter((x) => x.id !== r.id);
+        selected.delete(r.id);
+        drafts.delete(r.id);
+        gone++;
+      } catch (err) {
+        console.error(err);
+        if (err && err.code === "STALE") stale++; else failed++;
+      }
+      if (many) toast(`Deleting ${gone + stale + failed} of ${list.length}…`);
+    }
+    if (stale) await load();
+    setBusy(false);
+    undoSteps = [];
+    const parts = [];
+    if (gone) parts.push(`${gone} report${gone === 1 ? "" : "s"} deleted for good.`);
+    if (stale) parts.push(`${stale} skipped: already deleted or no longer rejected.`);
+    if (failed) parts.push(`${failed} couldn't be deleted. Check your connection and sign-in, then try again.`);
+    toast(parts.join(" "), false);
     renderList();
     renderDetail();
   }
@@ -410,6 +460,8 @@
   document.querySelectorAll("[data-bulk]").forEach((b) => b.addEventListener("click", () => decideSelected(b.dataset.bulk)));
   document.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", () => decideCurrent(b.dataset.act)));
   $("skip-btn").addEventListener("click", () => step(1));
+  $("delete-btn").addEventListener("click", () => { const r = current(); if (r) deleteForever([r]); });
+  $("bulk-delete").addEventListener("click", () => deleteForever(visible().filter((r) => selected.has(r.id))));
   $("back-btn").addEventListener("click", () => $("detail").classList.remove("open"));
   $("note").addEventListener("input", () => { if (currentId) drafts.set(currentId, $("note").value); });
   for (const text of QUICK_NOTES) {

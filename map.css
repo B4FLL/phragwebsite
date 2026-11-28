@@ -80,6 +80,7 @@
 .queue-actions { display: flex; gap: 6px; margin-top: 8px; }
 .queue-actions button { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #bdb8a5; background: #fff; cursor: pointer; font: inherit; }
 .queue-actions .ok { background: var(--green); color: #fff; border-color: var(--green); }
+.queue-actions .danger { border-color: #b23a2e; color: #a3281c; }
 
 .rotate-bar a { font-size: 18px; font-weight: 700; text-decoration: none; }
 

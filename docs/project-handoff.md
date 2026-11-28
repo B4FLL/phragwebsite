@@ -131,7 +131,7 @@ When `config.js` has empty values, `phrag.demo` is true, `sb` is null, and every
 There is no automated suite and no CI test. The checks are Playwright scripts, run by hand on the Mac against a local server:
 
 ```
-python3 -m http.server 8000
+python3 tests/serve.py
 NODE_PATH=$HOME/.claude/skills/playwright/node_modules TARGET_URL=http://localhost:8000 node tests/<name>.check.js
 ```
 
@@ -142,11 +142,12 @@ NODE_PATH=$HOME/.claude/skills/playwright/node_modules TARGET_URL=http://localho
 | `tests/cows.check.js` | Herds layer, legend, adding and removing a herd, expert photos, social links | 14/14 after a test fix (below) |
 | `tests/bug-fixes.check.js` | No doubled map records, photo count follows the chips, footer not covered by the editor bar | 6/6 |
 | `tests/risk-fixes.check.js` | Undo reject, dismiss reports, 100-photo paging, signed photo URLs (against a fake Supabase) | 7/7 |
+| `tests/delete-rejected.check.js` | Delete forever on rejected reports only (map list, review dashboard single and batch), and the request a fake Supabase receives | 13/13 |
 
 All five passed on the current `main`.
 
 - **The `cows` test fix:** its "javascript: address is refused" check expected the Instagram link to have no address. Instagram now has a built-in address, so the check now confirms the address isn't replaced by the `javascript:` one. The site itself was already refusing it correctly.
-- **The local test server can drop connections.** Python's `http.server` sometimes resets a connection while a page reloads (`ERR_CONNECTION_RESET` on `map.js`). The map then never loads and a test times out waiting for "public records". This is the test server, not the site. Re-run the test if it happens.
+- **Use `tests/serve.py`, not `python3 -m http.server`.** The built-in server queues only 5 waiting connections and resets the rest (`ERR_CONNECTION_RESET` on `map.js`), so tests timed out at random. With the longer queue in `tests/serve.py`, every test passed twice in a row.
 
 How the tests work:
 
@@ -239,6 +240,8 @@ delete from public.reports where reporter = 'TEST DATA' and notes like 'TEST REP
 **11-28 (Mac):**
 - The two handoff notes were merged into this file.
 - All five tests passed on the Mac, after the `cows` test fix in section 7.
+- Experts can delete rejected reports for good: **Delete forever** in the map's Rejected reports list, and on the review dashboard's Rejected tab (one report, or **Delete selected forever**). It always asks first, can't be undone, and isn't added to the dashboard's Undo. The new `experts delete rejected` rule in `members.sql` allows deleting only reports whose status is `rejected`, and the site's request repeats that condition. **Re-run `members.sql` in Supabase to turn it on.**
+- Added `tests/serve.py` (see section 7).
 
 ## 10. Traps already hit
 
@@ -249,6 +252,8 @@ delete from public.reports where reporter = 'TEST DATA' and notes like 'TEST REP
 - **Editing with Git Bash `sed`:** on the team PC, a multi-line `sed` insert collapsed lines. Use a file-editing tool instead.
 
 ## 11. Open items
+
+**Waiting on the team:** re-run `supabase/members.sql` in Supabase so experts can delete rejected reports. Until then the button says "Couldn't delete, try again". Then try it once as a real expert on a test report.
 
 **Not confirmed as resolved:**
 - The user said a friend's map report didn't show up for them.

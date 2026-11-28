@@ -51,6 +51,20 @@ const store = {
     const { error } = await sb.from("reports").update({ status, expert_note, verified_by: status === "unverified" ? null : user.id }).eq("id", id);
     if (error) throw error;
   },
+  // Permanently removes a rejected report. Only rejected ones (the database rule in
+  // supabase/members.sql enforces the same). Throws if nothing was deleted.
+  async removeRejected(id) {
+    if (demo) {
+      const all = JSON.parse(localStorage.getItem(DEMO_KEY) || "[]");
+      const left = all.filter((x) => !(x.id === id && x.status === "rejected"));
+      if (left.length === all.length) throw new Error("not deleted");
+      localStorage.setItem(DEMO_KEY, JSON.stringify(left));
+      return;
+    }
+    const { data, error } = await sb.from("reports").delete().eq("id", id).eq("status", "rejected").select("id");
+    if (error) throw error;
+    if (!data.length) throw new Error("not deleted (already gone, no longer rejected, or members.sql not re-run)");
+  },
 };
 
 // Cow herds (team-entered). Real mode: the cow_herds table (supabase/herds.sql). Demo mode: this browser only.
@@ -849,7 +863,7 @@ async function renderQueue() {
 // Reports that have already been decided are listed with an Undo, in case of a wrong click.
 // Undo puts the report back as unverified (it shows on the map as unverified and returns to the
 // queue). It also clears the expert note.
-async function renderDecided({ fetchItems, boxId, countId, emptyText, errorText, undoLabel }) {
+async function renderDecided({ fetchItems, boxId, countId, emptyText, errorText, undoLabel, canDelete = false }) {
   const box = $(boxId);
   let items;
   try { items = await fetchItems(); }
@@ -883,6 +897,23 @@ async function renderDecided({ fetchItems, boxId, countId, emptyText, errorText,
     const actions = document.createElement("div");
     actions.className = "queue-actions";
     actions.append(undo, go);
+    if (canDelete) {
+      const del = document.createElement("button");
+      del.type = "button"; del.className = "danger"; del.textContent = "Delete forever";
+      del.addEventListener("click", async () => {
+        if (!confirm("Delete this report for good?\n\nIt can't be brought back. Use Undo reject instead if it might be real.")) return;
+        del.disabled = true;
+        try {
+          await store.removeRejected(r.id);
+          renderRejected();
+        } catch (err) {
+          console.error(err);
+          del.disabled = false;
+          del.textContent = "Couldn't delete, try again";
+        }
+      });
+      actions.append(del);
+    }
     item.appendChild(actions);
     box.appendChild(item);
   }
@@ -895,7 +926,7 @@ const renderVerified = () => renderDecided({
 // Rejected reports vanish from the map and the queue, so this list is the only way to reach them here.
 const renderRejected = () => renderDecided({
   fetchItems: () => store.listByStatus("rejected"), boxId: "rejected-list", countId: "rejected-count",
-  emptyText: "No rejected reports.", errorText: "Couldn't load rejected reports.", undoLabel: "Undo reject",
+  emptyText: "No rejected reports.", errorText: "Couldn't load rejected reports.", undoLabel: "Undo reject", canDelete: true,
 });
 
 // Experts see the review queue; everyone else never sees this section.

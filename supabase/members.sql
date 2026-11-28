@@ -63,6 +63,14 @@ create policy "experts update" on public.reports
   for update to authenticated
   using (public.is_expert()) with check (public.is_expert());
 
+-- Experts can delete a report for good, but only one that is already rejected,
+-- so a verified or waiting report can't be wiped by one wrong click.
+grant delete on public.reports to authenticated;
+drop policy if exists "experts delete rejected" on public.reports;
+create policy "experts delete rejected" on public.reports
+  for delete to authenticated
+  using (public.is_expert() and status = 'rejected');
+
 drop policy if exists "editors add content" on public.site_content;
 create policy "editors add content" on public.site_content
   for insert to authenticated with check (public.is_editor());

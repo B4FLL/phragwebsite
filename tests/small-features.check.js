@@ -5,7 +5,7 @@
 // fake Supabase address and answers the sign-in request itself.)
 //
 // Run (needs Playwright; see docs/testing.md):
-//   python3 -m http.server 8000                      # in the project root
+//   python3 tests/serve.py                           # in the project root
 //   NODE_PATH=~/playwright-tools/node_modules TARGET_URL=http://localhost:8000 OUT_DIR=/tmp node tests/small-features.check.js
 const { chromium } = require("playwright");
 const URL = process.env.TARGET_URL || "http://localhost:8000";

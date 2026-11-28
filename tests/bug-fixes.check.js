@@ -2,7 +2,7 @@
 // the live Supabase project is never touched).
 //
 // Run (needs Playwright; see docs/testing.md):
-//   python3 -m http.server 8000                      # in the project root
+//   python3 tests/serve.py                           # in the project root
 //   NODE_PATH=$HOME/.claude/skills/playwright/node_modules TARGET_URL=http://localhost:8000 node tests/bug-fixes.check.js
 const { chromium } = require("playwright");
 const URL = process.env.TARGET_URL || "http://localhost:8000";

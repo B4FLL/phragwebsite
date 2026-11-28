@@ -127,6 +127,8 @@ How the tests work:
   - Turn off smooth scrolling before measuring positions.
 - Evidence for each batch of work is in `docs/evidence/*.md`, indexed in `docs/testing.md`, with screenshots in `docs/testing/`.
 
+> **Newer status:** sections 6 and 7 predate later work on 2026-11-27. Read [agent-handoff.md](agent-handoff.md) with them.
+
 ## 6. Changes made 2026-11-19 → 2026-11-27
 
 Everything below is merged into `main` and pushed (the latest feature commit is `53cae3e`).

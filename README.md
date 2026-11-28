@@ -19,6 +19,7 @@ Website and Utah tracking map for our FIRST LEGO League innovation project on in
 - `privacy.html` – privacy notice and community rules
 - `favicon.svg` – the site icon in the browser tab
 - `docs/project-handoff.md` – overview for an AI assistant or new developer: how the site fits together, rules, tests, recent changes
+- `docs/agent-handoff.md` – status on 2026-11-27 for the next AI agent: what was done, what was checked, what is open
 - `docs/system-flow.html` – open in a browser: diagrams of how the whole system works (pages, database, who can do what)
 - `.github/workflows/` – the two automatic jobs (data refresh, database keep-alive)
 - `data/inat-utah.json` – Utah observations pulled directly from iNaturalist (newest data)

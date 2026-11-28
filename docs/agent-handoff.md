@@ -10,6 +10,12 @@ Read in this order:
 
 This is a snapshot. Check the code, `git log` and the live site before relying on a statement here.
 
+## Start here
+
+- The latest work, a simpler menu and sign-in (`a191e47`) and the professional polish (`3d85a74`), was merged into `main` and pushed on 11-27 at the user's request. Both task branches were deleted.
+- The user was asked to tell teammates before the polish went live, because Research and Experts are hidden until filled and the teammate's three sign-in tabs are gone. Whether they did is unknown.
+- Next most useful checks: a real email sign-in through the new **Sign in** panel, the live pages on a real phone, the not-found page, a shared link's preview, and the scripts in `tests/` on a machine with Node.
+
 ## Working with the user
 
 - The user asked the assistant to act as senior developer for their FLL team. The time window given on 2026-10-30 was about two months.
@@ -23,7 +29,8 @@ This is a snapshot. Check the code, `git log` and the live site before relying o
 - Live site: https://b4fll.github.io/phragwebsite/ (GitHub Pages, `main` branch root). A push to `main` publishes it.
 - The repository moved to `B4FLL/phragwebsite`. The local remote on the team PC still uses the old address, `maybohubbard/phragwebsite`, and GitHub redirects it.
 - The repository is treated as public. Don't add private information, student details or secret keys to any file in it.
-- Before this file was written, the latest commit on `main` was `55fbcb9`, matching `origin/main`. The live `map.js` matched the local copy and `review.html` loaded.
+- Check `git log` for the latest commit. After a push, compare the live files with the local ones, since GitHub Pages can take a few minutes.
+- The team asked that links open the home page. At one point the user reported that "the link" went straight to the map. The main address loaded the home page in headless tests and no redirect to the map was found in the code. Which link they clicked was never confirmed.
 - The team PC had no Python, Node, `gh` CLI or Microsoft Word.
 
 ## What was done in this work
@@ -49,22 +56,25 @@ This is a snapshot. Check the code, `git log` and the live site before relying o
 
 `README.md` describes how these behave.
 
-**Later on 11-27: simpler menu and sign-in** (branch `simpler-signin-and-menu`)
+**Later on 11-27: simpler menu and sign-in** (`a191e47`, live that day: the 10 changed site files matched)
 
-- The menu went from eight links to Project, Map, Neighborhood, Identify, Team and an account button. The Solution and Experts sections are still on the home page.
+- The menu went from eight links to Project, Map, Neighborhood, Identify, Team and an account button. Solution and Experts lost their menu links.
 - The always-visible sign-in bar and its three tabs were replaced by a panel that opens from **Sign in**. The "this email isn't on the list" message that depended on the tabs was removed from the Members page.
 - Checked in headless Edge at 1200px and 375px on all seven pages, in demo mode, signed in and out. A stand-in database checked what the email form sends. No real sign-in email was sent, and no real phone was used.
 - To make a headless capture wait, serve a slow image from a second local server and make sure both servers are ready first. Captures taken without a real wait can happen before database replies are handled.
+- If you must wait for a deploy, run the polling loop as a background command. Don't use an outside website as a timer.
 
-**Later still on 11-27: professional polish** (branch `professional-polish`)
+**Later still on 11-27: professional polish** (`3d85a74`)
 
 - Placeholder text is no longer shown to visitors: blanks are empty with an editor-only `data-hint`, and Research and Experts stay hidden until filled.
 - Digital herding is worded as an idea ("would"). Don't change it to say it was built or tested unless the team confirms that.
 - Added: a three-step section, record counts and a drawn Utah map (`home.js`), a team photo slot in The Problem, folded map filters (the old-data warning stays visible), an empty-Neighborhood message, link preview tags and image, `404.html`, a skip link, focus outlines and Escape for the phone menu.
 - The default team line, "We're a FIRST LEGO League team from Utah.", needs the team's own introduction.
-- Checked in headless Edge in demo mode at 1200px and 375px, including editing and saving a test entry in that browser only. Link previews, the live not-found page, real phones and screen readers were not tried. One older colour pair, the tan label over the lightest part of the hero gradient, has low contrast (about 2.8 to 1).
+- Checked in headless Edge in demo mode at 1200px and 375px, including editing and saving a test entry in that browser only. Link previews, the live not-found page, real phones and screen readers were not tried. One colour pair, tan text against the lightest green of the hero gradient, calculates to about 2.8 to 1, which is low. The older tan label above the title uses these colors, though it sits toward the darker end.
 - Filter steps in `tests/cows.check.js` and `tests/small-features.check.js` were updated for the folded panel. **Neither has been run.**
 - Not done: a custom domain, a team logo and citations.
+- `social-preview.png` was drawn once by a temporary script that isn't in the repository. It shows the 11-23 records and doesn't update. It carries no numbers.
+- `404.html` and the `og:` tags contain the current site address. Change them if the address changes.
 
 ## How things were checked, and what wasn't
 
@@ -76,7 +86,7 @@ This is a snapshot. Check the code, `git log` and the live site before relying o
 
 **Dashboard check.** Its demo-mode script covered the V key and undo, held-down keys, typing in search, batch cancel, confirm and undo, a report changed by someone else, formula neutralising, CSV round trips, and import preview and apply. The script was a temporary file and is not in the repository.
 
-**The Playwright scripts in `tests/` could not be run on the team PC.** Their "last result" numbers in `project-handoff.md` come from earlier runs. The assistant changed the social-link expectations in `tests/cows.check.js` and has **not run that file since**. Run it first on a machine with Node.
+**The Playwright scripts in `tests/` could not be run on the team PC.** Their "last result" numbers in `project-handoff.md` come from earlier runs. The assistant changed the social-link and filter steps in `tests/cows.check.js`, and the filter step in `tests/small-features.check.js`, and has **not run either file since**. Run those first on a machine with Node.
 
 **Live database.** On 11-27 the user ran the SQL. The assistant then confirmed that the `flags` table, the `submitter_hash` column, the private `community-photos` bucket and the public views were in place. A screenshot of `pg_policies` from the user showed the rules using `is_editor()` and `is_expert()`.
 
@@ -135,6 +145,10 @@ Its sections 6 and 7 describe the state before the 11-27 commits above. In parti
 - **Review decisions:** updates are conditional on the status the expert saw (`.eq("status", fromStatus)`), so two experts can't silently overwrite each other. Keep that guard.
 - **Spreadsheet text:** reporters' text is untrusted. Keep the formula neutralising in `review-csv.js`.
 - **Shell:** in Git Bash, a `sed` multi-line insert collapsed lines. Use a file editing tool.
+
+## Side topic: robot game
+
+The user asked whether OBS recordings of their FLL robot could be linked to Claude in VS Code to suggest changes. They program with **Pybricks in VS Code**. A plan was discussed: record, extract frames with ffmpeg, log sensor readings, compare them with the code, and perhaps add OBS WebSocket control later. The user said **not to do anything yet**. Nothing was built or installed. Keep any robot files out of this public repository. Wait for the user to ask.
 
 ## Files outside the repository
 

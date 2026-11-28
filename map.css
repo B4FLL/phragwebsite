@@ -135,3 +135,7 @@
 .panel-fold summary, .disclaimer summary { cursor: pointer; font-weight: 700; color: var(--green-dark); }
 .panel-fold summary { font-size: 1.05rem; }
 .panel-fold[open] summary { margin-bottom: 8px; }
+
+/* The map's checkboxes, folded under one line */
+.filter-fold > summary { cursor: pointer; font-weight: 700; color: var(--green-dark); font-size: 1.05rem; }
+.filter-fold[open] > summary { margin-bottom: 8px; }

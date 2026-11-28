@@ -67,6 +67,7 @@ async function makeJpeg(page) {
     check("Verify failure shows an error and re-enables the buttons", !stillDisabled);
 
     // Remembered filters.
+    await page.click(".filter-fold summary"); // the checkboxes start folded
     await page.uncheck('[data-layer="unspecified"]');
     await page.reload();
     await page.waitForFunction(() => document.getElementById("stats").textContent.includes("public records"));

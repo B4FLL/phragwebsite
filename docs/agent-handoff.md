@@ -56,6 +56,16 @@ This is a snapshot. Check the code, `git log` and the live site before relying o
 - Checked in headless Edge at 1200px and 375px on all seven pages, in demo mode, signed in and out. A stand-in database checked what the email form sends. No real sign-in email was sent, and no real phone was used.
 - To make a headless capture wait, serve a slow image from a second local server and make sure both servers are ready first. Captures taken without a real wait can happen before database replies are handled.
 
+**Later still on 11-27: professional polish** (branch `professional-polish`)
+
+- Placeholder text is no longer shown to visitors: blanks are empty with an editor-only `data-hint`, and Research and Experts stay hidden until filled.
+- Digital herding is worded as an idea ("would"). Don't change it to say it was built or tested unless the team confirms that.
+- Added: a three-step section, record counts and a drawn Utah map (`home.js`), a team photo slot in The Problem, folded map filters (the old-data warning stays visible), an empty-Neighborhood message, link preview tags and image, `404.html`, a skip link, focus outlines and Escape for the phone menu.
+- The default team line, "We're a FIRST LEGO League team from Utah.", needs the team's own introduction.
+- Checked in headless Edge in demo mode at 1200px and 375px, including editing and saving a test entry in that browser only. Link previews, the live not-found page, real phones and screen readers were not tried. One older colour pair, the tan label over the lightest part of the hero gradient, has low contrast (about 2.8 to 1).
+- Filter steps in `tests/cows.check.js` and `tests/small-features.check.js` were updated for the folded panel. **Neither has been run.**
+- Not done: a custom domain, a team logo and citations.
+
 ## How things were checked, and what wasn't
 
 **Browser checks.** The assistant used headless Edge against a local server (a PowerShell `HttpListener` on `localhost:8765`). A temporary `_t.html` in the project root injected test scripts and was deleted afterwards. For demo mode it replaced the `config.js` tag with `window.PHRAG_CONFIG={}`. For signed-in code it replaced the Supabase CDN tag with a stand-in. Results were read from the page title, DOM dumps or screenshots.
@@ -100,10 +110,12 @@ Don't add more test data to the live database unless the user asks. The project 
 
 **Content the team still needs to write or check** (from the HTML defaults)
 
-- Our Research: its text and three label bullets are placeholders.
-- Solution: the intro still says "Edit this text to describe exactly what your team built and tested.", and the Testing & iteration card is a placeholder. Claims in the other Solution cards need the team to confirm them.
+(Updated after the polish work: these blanks are now hidden from visitors rather than showing placeholder text.)
+
+- Our Research, the two first expert cards and the first Sources item are blank.
+- Solution: the Testing and iteration card is blank. The team should check the wording of the idea.
+- Our Team has only a one-line default.
 - The Problem section's facts have no citations.
-- The two expert cards, Our Team and the first Sources item are placeholders.
 - The photo slots are empty.
 - An expert needs to check the Identify guide.
 - A coach should review `privacy.html`.

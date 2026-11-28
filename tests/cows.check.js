@@ -65,11 +65,13 @@ const loaded = (page) => page.waitForFunction(() => document.getElementById("sta
     await page.screenshot({ path: `${OUT}/cows-map.png` });
 
     // Checkbox hides herds and the choice survives a reload.
+    await page.click(".filter-fold summary"); // the checkboxes start folded
     await page.uncheck("#show-herds");
     check("Unticking Cow herds hides the markers and rings", (await page.locator(".herd-icon").count()) === 0 && (await page.locator(".leaflet-overlay-pane path[stroke-dasharray='6 5']").count()) === 0);
     await page.reload();
     await loaded(page);
     check("The Cow herds choice is remembered", !(await page.isChecked("#show-herds")) && (await page.locator(".herd-icon").count()) === 0);
+    await page.click(".filter-fold summary"); // folded again after the reload
     await page.check("#show-herds");
 
     // Remove a herd from its popup.

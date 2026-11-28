@@ -6,6 +6,9 @@ Website and Utah tracking map for our FIRST LEGO League innovation project on in
 
 - `index.html` – project story (Problem, Research, Solution, Experts, Team, Sources)
 - `map.html`, `map.js`, `map.css` – Utah map, report form, expert verification
+- `home.js` - the home page's record counts and the small Utah map beside the title, both worked out from the files in `data/`
+- `404.html` - the "page not found" page. Its `<base href="/phragwebsite/">` line must change if the site moves to another address
+- `social-preview.png` - the picture shown when a link is shared. It is a fixed drawing, so its map dots don't update with the data. The `og:` tags near the top of each public page point to it and use the live address
 - `identify.html` – guide to telling invasive from native Phragmites
 - `login.html`, `login.js` – member sign-in (email link)
 - `signin-bar.js` – the **Sign in** button at the end of the menu and the one-line email form it opens (hidden until clicked). It has a **Team or expert sign-in** link to the Members page. For signed-in visitors the button reads **My account** and opens the Members page
@@ -101,7 +104,7 @@ Signed-in visitors see a **Report** button on other people's photos and comments
 
 The map shows where our herds are and how they relate to Phragmites.
 
-- **Cow herds layer:** each herd is a cow marker with a dashed ring (2 km, roughly how far it can graze). Tick or untick "Cow herds" and "Grazing range" in **Show on map**. The choice is remembered.
+- **Cow herds layer:** each herd is a cow marker with a dashed ring (2 km, roughly how far it can graze). Tick or untick "Cow herds" and "Grazing range" under **Filter what's on the map** (folded until opened). The choice is remembered.
 - **Connection to Phragmites:** each herd's popup and its entry in the **Cow herds** panel say how many invasive Phragmites records lie within 2 km, or how far away the nearest one is. The count uses the records currently loaded (iNaturalist, GBIF and community reports).
 - **Adding herds:** signed-in editors and experts see **Add a herd** in the panel: name, number of cows, activity, date and notes, then click the map for the spot. They can also **Remove herd** from a herd's popup. Everyone else can only look. This needs `supabase/herds.sql` to be run once; until then the herd list says it couldn't load. In demo mode herds stay in the browser.
 - **Legend:** the box at the bottom right of the map explains every color and shape. It starts open only on large screens, so it doesn't cover the map.
@@ -163,7 +166,8 @@ Emails can be typed in any capitalization. The sign-in link proves the person ow
 **Editing the site:** sign in, open any page, and press **Edit page** in the bar at the bottom. Click any dashed text to type; click a photo box to upload a photo; press **Save changes**. Changes go live for everyone right away, with no GitHub push.
 
 - Photos are shrunk and re-saved as JPEG, which also removes hidden location data from phone photos. Add a short description for each photo (it is read aloud to blind visitors).
-- Blank cards (experts, team members) and blank sources are hidden. To add one, fill in a blank. To remove one, clear its text.
+- Blank cards, bullets and sources are hidden from visitors. **Our Research** and **Experts We Talked To** are hidden entirely until they have some text (a heading alone doesn't count) or a photo. Press **Edit page** to see every blank, each with a hint about what to write. To add something, fill in a blank. To remove it, clear its text (and remove its photo).
+- In the HTML, `data-optional` marks a card or section that hides while blank; give it `hidden` too, so it doesn't flash while the page loads.
 - Text is plain text only (no bold or links). Ask a developer if you need more.
 - Every save is also kept in the `site_content_history` table. Press **Previous versions** in the bar (when not editing) to see earlier values of the text and photos on that page and **Restore** one. A restore is saved as a new change, so it can be undone the same way. The original text written in the HTML is not in the history, only values saved through the editor. No database change is needed.
 - **Two editors at once:** if someone else saved an item you are also changing since you opened the page, saving asks before replacing their version (theirs stays in Previous versions).

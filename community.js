@@ -274,11 +274,19 @@ function renderFeed() {
   }
   if (!list.length) {
     const nearby = mode === "near" && userPos;
-    feed.append(h("p", { className: "empty" }, guess !== "all" && posts.length
-      ? "No photos match this filter. Choose All to see every photo."
-      : nearby
-        ? "No photos near you yet. Try a wider distance, or be the first to share one!"
-        : "No photos yet. Be the first to share one!"));
+    if (!posts.length && !nearby && !loadFailed) {
+      // Nothing has been shared at all: say what to do next instead of just "nothing here".
+      feed.append(h("div", { className: "empty empty-start" },
+        h("h2", {}, "Be the first to share a photo"),
+        h("p", {}, "Seen a tall reed near water? Photograph it from public land or your own property, then share it here."),
+        h("p", {}, h("a", { href: "identify.html" }, "How to tell invasive from native Phragmites"))));
+    } else {
+      feed.append(h("p", { className: "empty" }, guess !== "all" && posts.length
+        ? "No photos match this filter. Choose All to see every photo."
+        : nearby
+          ? "No photos near you yet. Try a wider distance, or be the first to share one!"
+          : "No photos yet. Be the first to share one!"));
+    }
     appendMore(feed);
     return;
   }

@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Phragmites Project</title>
   <meta name="description" content="Our FIRST LEGO League innovation project on invasive Phragmites.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Phragmites Project">
+  <meta property="og:title" content="Taking on invasive Phragmites">
+  <meta property="og:description" content="Our FIRST LEGO League innovation project on invasive Phragmites.">
+  <meta property="og:url" content="https://b4fll.github.io/phragwebsite/">
+  <meta property="og:image" content="https://b4fll.github.io/phragwebsite/social-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Taking on invasive Phragmites, beside a Utah map of records">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -31,7 +41,8 @@
 
   <main id="top">
     <section class="hero">
-      <div class="container">
+      <div class="container hero-grid">
+        <div>
         <p class="eyebrow" data-edit="hero-eyebrow">FIRST LEGO League Innovation Project</p>
         <h1 data-edit="hero-title">Taking on invasive Phragmites</h1>
         <p class="lead" data-edit="hero-lead">
@@ -40,10 +51,45 @@
           This is how our team is working on the problem.
         </p>
         <a class="button" href="map.html">Explore the Utah map</a>
+        </div>
+        <figure id="hero-map" class="hero-map" hidden>
+          <a href="map.html" aria-label="Open the Utah map"></a>
+          <figcaption>Public Phragmites records in Utah. Open the full map.</figcaption>
+        </figure>
       </div>
     </section>
 
-    <section id="problem" class="section">
+    <section id="how" class="section">
+      <div class="container">
+        <h2 data-edit="how-heading">How our idea works</h2>
+        <ol class="cards steps">
+          <li class="card">
+            <p class="step-tag live">On this site now</p>
+            <h3 data-edit="how-1-title">1. Find</h3>
+            <p data-edit="how-1-text">The map shows public Phragmites records, and anyone can report a sighting.</p>
+          </li>
+          <li class="card">
+            <p class="step-tag live">On this site now</p>
+            <h3 data-edit="how-2-title">2. Check</h3>
+            <p data-edit="how-2-text">Approved experts can verify or reject reports sent to this site.</p>
+          </li>
+          <li class="card">
+            <p class="step-tag">Our idea</p>
+            <h3 data-edit="how-3-title">3. Graze</h3>
+            <p data-edit="how-3-text">Cows guided by GPS virtual fences would graze the patches that need it.</p>
+          </li>
+        </ol>
+        <div id="record-stats" class="stats" hidden>
+          <dl>
+            <div><dt>public records on our map</dt><dd id="stat-total"></dd></div>
+            <div><dt>of them seen in the last 5 years</dt><dd id="stat-recent"></dd></div>
+          </dl>
+          <p class="small-note">From iNaturalist and GBIF, last downloaded <span id="stat-date"></span>. A record is one sighting or specimen, not a count of patches. Not all are the invasive kind, and old ones may be out of date.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="problem" class="section alt">
       <div class="container">
         <h2 data-edit="problem-heading">The Problem</h2>
         <p>
@@ -52,6 +98,7 @@
           4 meters (15 feet) tall and forms dense stands that block sunlight and push out
           native species.
         </p>
+        <figure class="slot" data-edit-img="problem-photo" data-alt="Phragmites growing in Utah"><img alt=""></figure>
         <div class="cards">
           <article class="card">
             <h3 data-edit="problem-1-title">Spreads fast</h3>
@@ -69,20 +116,17 @@
       </div>
     </section>
 
-    <section id="research" class="section alt">
+    <section id="research" class="section alt" data-optional hidden>
       <div class="container">
         <h2 data-edit="research-heading">Our Research</h2>
-        <p data-edit="research-text">
-          Write about what you learned: where you found Phragmites near you,
-          what methods are used to control it today, and what problems those methods have.
-        </p>
+        <p data-edit="research-text" data-hint="Write what you learned: where Phragmites grows near you, how it is controlled today, and the problems with those methods."></p>
         <figure class="slot" data-edit-img="research-photo" data-alt="Our research"><img alt=""></figure>
         <ul class="checklist">
-          <li data-edit="research-point-1">Where we observed Phragmites</li>
-          <li data-edit="research-point-2">Current control methods we studied</li>
-          <li data-edit="research-point-3">Gaps we found in existing solutions</li>
-          <li data-edit="research-point-4"></li>
-          <li data-edit="research-point-5"></li>
+          <li data-edit="research-point-1" data-hint="Where we observed Phragmites" hidden></li>
+          <li data-edit="research-point-2" data-hint="A control method we studied" hidden></li>
+          <li data-edit="research-point-3" data-hint="A gap we found in existing solutions" hidden></li>
+          <li data-edit="research-point-4" data-hint="Another thing we learned" hidden></li>
+          <li data-edit="research-point-5" data-hint="Another thing we learned" hidden></li>
         </ul>
       </div>
     </section>
@@ -91,117 +135,115 @@
       <div class="container">
         <h2 data-edit="solution-heading">Our Solution</h2>
         <p data-edit="solution-text">
-          Our idea is digital herding: using cows to graze invasive Phragmites, with GPS and virtual fences guiding the herd to the patches that need it. Edit this text to describe exactly what your team built and tested.
+          Our idea is digital herding: using cows to graze invasive Phragmites, with GPS and virtual fences guiding a herd to the patches that need it.
         </p>
         <figure class="slot" data-edit-img="solution-photo" data-alt="Our solution"><img alt=""></figure>
         <div class="cards">
           <article class="card">
-            <h3 data-edit="solution-1-title">What it is</h3>
-            <p data-edit="solution-1-text">Cows graze Phragmites patches while a digital herding system (GPS and virtual fences) keeps them where we want them.</p>
+            <h3 data-edit="solution-1-title">The idea</h3>
+            <p data-edit="solution-1-text">Cows would graze Phragmites patches while GPS virtual fences keep them where grazing is needed.</p>
           </article>
           <article class="card">
-            <h3 data-edit="solution-2-title">How it works</h3>
-            <p data-edit="solution-2-text">The map shows where invasive Phragmites is and where our herds are, so we can send the herd to the nearest patch.</p>
+            <h3 data-edit="solution-2-title">How it would work</h3>
+            <p data-edit="solution-2-text">The map's Phragmites records and herd locations would help choose a nearby patch, and a virtual fence would guide the herd there.</p>
           </article>
-          <article class="card">
-            <h3 data-edit="solution-3-title">Testing &amp; iteration</h3>
-            <p data-edit="solution-3-text">How you tested it and what you changed based on the results.</p>
+          <article class="card" data-optional hidden>
+            <h3 data-edit="solution-3-title" data-hint="Testing and iteration"></h3>
+            <p data-edit="solution-3-text" data-hint="How you tested your idea and what you changed. Only write what really happened."></p>
           </article>
         </div>
       </div>
     </section>
 
-    <section id="experts" class="section alt">
+    <section id="experts" class="section alt" data-optional hidden>
       <div class="container">
         <h2 data-edit="experts-heading">Experts We Talked To</h2>
         <!-- Cards with empty text are hidden from visitors. To add an expert, fill in a blank card. -->
         <div class="cards">
-          <article class="card">
+          <article class="card" data-optional hidden>
             <figure class="slot expert-photo" data-edit-img="expert-1-photo" data-alt="Photo of expert 1"><img alt=""></figure>
-            <h3 data-edit="expert-1-name">Expert name</h3>
-            <p class="muted" data-edit="expert-1-role">Role / organization</p>
-            <p data-edit="expert-1-text">What we learned from them and how it changed our project.</p>
+            <h3 data-edit="expert-1-name" data-hint="Expert name"></h3>
+            <p class="muted" data-edit="expert-1-role" data-hint="Role and organization"></p>
+            <p data-edit="expert-1-text" data-hint="What we learned from them and how it changed our project"></p>
           </article>
-          <article class="card">
+          <article class="card" data-optional hidden>
             <figure class="slot expert-photo" data-edit-img="expert-2-photo" data-alt="Photo of expert 2"><img alt=""></figure>
-            <h3 data-edit="expert-2-name">Expert name</h3>
-            <p class="muted" data-edit="expert-2-role">Role / organization</p>
-            <p data-edit="expert-2-text">What we learned from them and how it changed our project.</p>
+            <h3 data-edit="expert-2-name" data-hint="Expert name"></h3>
+            <p class="muted" data-edit="expert-2-role" data-hint="Role and organization"></p>
+            <p data-edit="expert-2-text" data-hint="What we learned from them and how it changed our project"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <figure class="slot expert-photo" data-edit-img="expert-3-photo" data-alt="Photo of expert 3"><img alt=""></figure>
-            <h3 data-edit="expert-3-name"></h3>
-            <p class="muted" data-edit="expert-3-role"></p>
-            <p data-edit="expert-3-text"></p>
+            <h3 data-edit="expert-3-name" data-hint="Expert name"></h3>
+            <p class="muted" data-edit="expert-3-role" data-hint="Role and organization"></p>
+            <p data-edit="expert-3-text" data-hint="What we learned from them and how it changed our project"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <figure class="slot expert-photo" data-edit-img="expert-4-photo" data-alt="Photo of expert 4"><img alt=""></figure>
-            <h3 data-edit="expert-4-name"></h3>
-            <p class="muted" data-edit="expert-4-role"></p>
-            <p data-edit="expert-4-text"></p>
+            <h3 data-edit="expert-4-name" data-hint="Expert name"></h3>
+            <p class="muted" data-edit="expert-4-role" data-hint="Role and organization"></p>
+            <p data-edit="expert-4-text" data-hint="What we learned from them and how it changed our project"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <figure class="slot expert-photo" data-edit-img="expert-5-photo" data-alt="Photo of expert 5"><img alt=""></figure>
-            <h3 data-edit="expert-5-name"></h3>
-            <p class="muted" data-edit="expert-5-role"></p>
-            <p data-edit="expert-5-text"></p>
+            <h3 data-edit="expert-5-name" data-hint="Expert name"></h3>
+            <p class="muted" data-edit="expert-5-role" data-hint="Role and organization"></p>
+            <p data-edit="expert-5-text" data-hint="What we learned from them and how it changed our project"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <figure class="slot expert-photo" data-edit-img="expert-6-photo" data-alt="Photo of expert 6"><img alt=""></figure>
-            <h3 data-edit="expert-6-name"></h3>
-            <p class="muted" data-edit="expert-6-role"></p>
-            <p data-edit="expert-6-text"></p>
+            <h3 data-edit="expert-6-name" data-hint="Expert name"></h3>
+            <p class="muted" data-edit="expert-6-role" data-hint="Role and organization"></p>
+            <p data-edit="expert-6-text" data-hint="What we learned from them and how it changed our project"></p>
           </article>
         </div>
       </div>
     </section>
 
-    <section id="team" class="section">
+    <section id="team" class="section alt">
       <div class="container">
         <h2 data-edit="team-heading">Our Team</h2>
-        <p data-edit="team-text">
-          Team name &amp; number — a short intro about who you are.
-        </p>
+        <p data-edit="team-text">We're a FIRST LEGO League team from Utah.</p>
         <figure class="slot" data-edit-img="team-photo" data-alt="Our team"><img alt=""></figure>
         <!-- Cards with empty text are hidden from visitors. To add a member, fill in a blank card. -->
         <div class="cards">
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <h3 data-edit="member-1-name"></h3>
             <p class="muted" data-edit="member-1-role"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <h3 data-edit="member-2-name"></h3>
             <p class="muted" data-edit="member-2-role"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <h3 data-edit="member-3-name"></h3>
             <p class="muted" data-edit="member-3-role"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <h3 data-edit="member-4-name"></h3>
             <p class="muted" data-edit="member-4-role"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <h3 data-edit="member-5-name"></h3>
             <p class="muted" data-edit="member-5-role"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <h3 data-edit="member-6-name"></h3>
             <p class="muted" data-edit="member-6-role"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <h3 data-edit="member-7-name"></h3>
             <p class="muted" data-edit="member-7-role"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <h3 data-edit="member-8-name"></h3>
             <p class="muted" data-edit="member-8-role"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <h3 data-edit="member-9-name"></h3>
             <p class="muted" data-edit="member-9-role"></p>
           </article>
-          <article class="card" data-optional>
+          <article class="card" data-optional hidden>
             <h3 data-edit="member-10-name"></h3>
             <p class="muted" data-edit="member-10-role"></p>
           </article>
@@ -209,26 +251,26 @@
       </div>
     </section>
 
-    <section id="sources" class="section alt">
+    <section id="sources" class="section">
       <div class="container">
         <h2 data-edit="sources-heading">Sources</h2>
         <!-- Empty entries are hidden from visitors. Fill in a blank one to add a source. -->
         <ol class="sources">
-          <li data-edit="source-1">Source title, author/organization, link, date accessed</li>
+          <li data-edit="source-1" data-hint="Source title, author or organization, link, date accessed" hidden></li>
           <li data-edit="source-2">iNaturalist observations, inaturalist.org (Utah, Phragmites australis), accessed via the iNaturalist API</li>
           <li data-edit="source-3">GBIF.org occurrence records (Phragmites australis, Utah), gbif.org</li>
-          <li data-edit="source-4"></li>
-          <li data-edit="source-5"></li>
-          <li data-edit="source-6"></li>
-          <li data-edit="source-7"></li>
-          <li data-edit="source-8"></li>
-          <li data-edit="source-9"></li>
-          <li data-edit="source-10"></li>
+          <li data-edit="source-4" data-hint="Source title, author or organization, link, date accessed" hidden></li>
+          <li data-edit="source-5" data-hint="Source title, author or organization, link, date accessed" hidden></li>
+          <li data-edit="source-6" data-hint="Source title, author or organization, link, date accessed" hidden></li>
+          <li data-edit="source-7" data-hint="Source title, author or organization, link, date accessed" hidden></li>
+          <li data-edit="source-8" data-hint="Source title, author or organization, link, date accessed" hidden></li>
+          <li data-edit="source-9" data-hint="Source title, author or organization, link, date accessed" hidden></li>
+          <li data-edit="source-10" data-hint="Source title, author or organization, link, date accessed" hidden></li>
         </ol>
       </div>
     </section>
 
-    <section id="contact" class="section">
+    <section id="contact" class="section alt">
       <div class="container">
         <h2 data-edit="contact-heading">Contact Us</h2>
         <p data-edit="contact-text">Have a question about our project, or know about Phragmites near you? Send us an email.</p>
@@ -257,5 +299,6 @@
   <script src="script.js"></script>
   <script src="signin-bar.js"></script>
   <script src="cms.js"></script>
+  <script src="home.js"></script>
 </body>
 </html>

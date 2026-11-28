@@ -68,7 +68,9 @@
     }
   }
 
-  // Empty list items and empty optional cards stay hidden from visitors.
+  // Empty list items, and empty optional cards and sections, stay hidden from visitors. A block
+  // marked data-optional shows once it has some text (a section heading alone doesn't count)
+  // or a photo.
   function hideEmpty() {
     document.querySelectorAll("li[data-edit]").forEach((li) => {
       li.hidden = !editing && !li.textContent.trim();
@@ -77,10 +79,14 @@
       const li = a.closest("li") || a;
       li.hidden = !editing && !safeLink(a.getAttribute("href"));
     }
-    document.querySelectorAll(".card[data-optional]").forEach((card) => {
-      const any = [...card.querySelectorAll("[data-edit]")].some((e) => e.textContent.trim());
-      card.hidden = !editing && !any;
+    document.querySelectorAll("[data-optional]").forEach((box) => {
+      const any = [...box.querySelectorAll("[data-edit]:not(h2)")].some((e) => e.textContent.trim()) ||
+        !!box.querySelector(".slot.has-image");
+      box.hidden = !editing && !any;
     });
+    // Keep the section backgrounds alternating, whichever sections are showing.
+    [...document.querySelectorAll("main > .section:not(.hero)")].filter((s) => !s.hidden)
+      .forEach((s, i, all) => { if (all.length > 1) s.classList.toggle("alt", i % 2 === 1); });
   }
 
   function apply(content) {

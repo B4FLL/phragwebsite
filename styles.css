@@ -250,6 +250,7 @@ a {
 .editing [data-edit] { outline: 2px dashed var(--tan); outline-offset: 3px; cursor: text; min-height: 1em; }
 .editing [data-edit]:focus { outline: 2px solid var(--green); background: rgba(255, 251, 232, 0.9); color: var(--text); }
 .editing [data-edit]:empty::before { content: "(empty - click to type)"; font-style: italic; opacity: 0.6; }
+.editing [data-edit][data-hint]:empty::before { content: attr(data-hint); }
 .editing .slot { position: relative; display: block !important; cursor: pointer; outline: 2px dashed var(--tan); outline-offset: 3px; }
 .editing .slot:not(.has-image) { padding: 36px 12px; text-align: center; background: #fff; color: var(--muted); }
 .editing .slot:not(.has-image)::before { content: "Click to add a photo"; }
@@ -288,3 +289,30 @@ a {
 .social li[hidden] { display: none; }
 .social a { color: inherit; font-weight: 600; }
 .editing .social a { outline: 2px dashed var(--tan); outline-offset: 3px; cursor: pointer; }
+
+/* Home page: hero map, the three steps and record counts (home.js) */
+.hero-grid { display: flex; align-items: center; gap: 48px; }
+.hero-grid > div { flex: 1 1 0; min-width: 0; }
+.hero-map { flex: 0 0 280px; margin: 0; text-align: center; }
+.hero-map a { display: block; border-radius: var(--radius); }
+.hero-map svg { display: block; width: 100%; height: auto; }
+.hero-map-state { fill: rgba(255, 255, 255, 0.08); stroke: var(--tan); stroke-width: 2; stroke-linejoin: round; }
+.hero-map-dot { fill: #fff; fill-opacity: 0.7; }
+.hero-map figcaption { margin-top: 8px; font-size: 0.85rem; color: #e6efe8; }
+@media (max-width: 760px) { .hero { padding: 56px 0 60px; } .hero-grid { flex-direction: column; align-items: stretch; gap: 32px; } .hero-grid > div, .hero-map { flex: none; } .hero-map { width: 100%; max-width: 240px; align-self: center; } }
+
+.steps { list-style: none; padding: 0; }
+.step-tag { display: inline-block; margin: 0 0 10px; padding: 1px 10px; border: 1px solid #8a6a2c; border-radius: 999px; color: #6f531c; font-size: 0.8rem; font-weight: 600; }
+.step-tag.live { border-color: var(--green); color: var(--green); }
+.stats { margin-top: 36px; }
+.stats dl { display: flex; flex-wrap: wrap; gap: 16px 48px; margin: 0; }
+.stats dl div { display: flex; flex-direction: column-reverse; }
+.stats dt { color: var(--muted); font-size: 0.95rem; }
+.stats dd { margin: 0; font-size: 2.4rem; font-weight: 700; line-height: 1.2; color: var(--green-dark); }
+.small-note { max-width: 640px; font-size: 0.85rem; color: var(--muted); }
+
+/* Keyboard help: a link that skips the menu, and a clear outline on whatever has focus */
+.skip-link { position: absolute; left: 8px; top: -60px; z-index: 5000; padding: 8px 14px; background: #fff; color: var(--green-dark); border-radius: 6px; font-weight: 600; }
+.skip-link:focus { top: 8px; }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--tan); outline-offset: 2px; }
+main:focus { outline: none; }

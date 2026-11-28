@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Utah Phragmites Map</title>
   <meta name="description" content="Map of Phragmites sightings across Utah. Report a sighting or verify reports as an expert.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Phragmites Project">
+  <meta property="og:title" content="Utah Phragmites Map">
+  <meta property="og:description" content="Map of Phragmites sightings across Utah. Report a sighting or verify reports as an expert.">
+  <meta property="og:url" content="https://b4fll.github.io/phragwebsite/map.html">
+  <meta property="og:image" content="https://b4fll.github.io/phragwebsite/social-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Taking on invasive Phragmites, beside a Utah map of records">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
@@ -77,7 +87,8 @@
       </section>
 
       <section>
-        <h3>Show on map</h3>
+        <details class="filter-fold">
+        <summary>Filter what's on the map</summary>
         <!-- Each label's words sit in one <span>, so the row's spacing doesn't split up the sentence. -->
         <label class="filter"><input type="checkbox" data-layer="invasive" checked> <span class="dot invasive"></span> <span>Invasive (subsp. <em>australis</em>)</span></label>
         <label class="filter"><input type="checkbox" data-layer="native" checked> <span class="dot native"></span> <span>Native (subsp. <em>americanus</em>)</span></label>
@@ -87,6 +98,7 @@
         <label class="filter"><input type="checkbox" id="show-herds" checked> <span class="dot herd"></span> <span>Cow herds</span></label>
         <label class="filter"><input type="checkbox" id="show-range" checked> <span class="ring"></span> <span>Grazing range (2 km around each herd)</span></label>
         <label class="filter"><input type="checkbox" id="show-old" checked> <span>Include records older than 5 years (shown faded)</span></label>
+        </details>
         <p class="small">Small dots are public records from <a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist</a> and <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF</a> (museums, herbaria). Large dots are reports from this site; a solid outline means an expert verified it.</p>
         <p class="small"><a href="privacy.html">Privacy &amp; community rules</a></p>
         <details class="disclaimer"><summary><strong>How old is this data?</strong></summary> sightings can be years old. Phragmites may have spread, died back, or been treated since, and some sites were surveyed only once (for example a batch of records from 2009). Treat faded dots as leads to re-check, not current conditions. Not every patch is recorded, and no dot here is a confirmed location of invasive Phragmites unless an expert verified it.</details>
@@ -94,7 +106,7 @@
 
       <section id="herd-panel">
         <h3>Cow herds</h3>
-        <p class="small">Herds our digital herding project is tracking. The number is how many invasive Phragmites records lie within 2 km of the herd, which is roughly what it can graze.</p>
+        <p class="small">Herds added to this map for our digital herding idea. The number is how many invasive Phragmites records lie within 2 km of the herd, which is roughly what it can graze.</p>
         <div id="herd-list" class="herd-list">Loading…</div>
         <!-- Only shown to signed-in editors and experts. -->
         <div id="herd-admin" hidden>

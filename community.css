@@ -67,3 +67,6 @@ select.chip { appearance: auto; }
 /* The posting rules fold into one line until opened */
 .rules-box summary { cursor: pointer; }
 .rules-box[open] summary { margin-bottom: 6px; }
+.empty-start { background: #fff; border: 2px dashed #cfc9b4; border-radius: var(--radius); padding: 32px 20px; }
+.empty-start h2 { margin: 0 0 8px; font-size: 1.3rem; }
+.empty-start p { margin: 6px auto; max-width: 440px; }

@@ -33,13 +33,16 @@ Read this first if you are an AI agent (or a new developer) picking up this repo
 - `auth.js` exposes `window.phrag = { cfg, demo, sb, getMember, photoUrls }`.
   - `getMember()` returns the signed-in user and their roles. It calls the `is_editor` and `is_expert` RPCs with a retry, and falls back to the last good answer cached in `sessionStorage` (`phragRoles`).
   - `photoUrls(bucket, paths)` returns signed URLs that last 1 hour. If signing fails (for example, before the SQL is re-run), it falls back to public URLs.
-- `script.js` handles the mobile menu toggle and the footer year.
+- `script.js` handles the mobile menu toggle (Escape closes it), the "Skip to content" link and the footer year.
+- `home.js` fills in the home page's record counts and draws its small Utah map from `data/*.json`. Its 5-year cut-off must match `OLD_YEARS` in `map.js`.
+- `404.html` is GitHub Pages' not-found page. It relies on `<base href="/phragwebsite/">`.
 - `signin-bar.js` runs the account button at the end of the menu (`.nav-account`) and the sign-in panel under the header.
   - The menu is Project, Map, Neighborhood, Identify, Team, then the button. Each HTML page has its own copy.
   - In the HTML the button is a plain "Sign in" link to `login.html`. For signed-out visitors, clicking it opens a one-line email form instead; the panel starts closed.
   - "Team or expert sign-in" in the panel goes to the Members page.
   - For signed-in visitors it reads "My account" and goes to the Members page. This is how members reach that page. `login.js` sets the label there.
 - `cms.js` is in-page editing for editors.
+  - Blocks marked `data-optional` (cards or whole sections) hide from visitors until they hold text other than an `h2`, or a photo. `data-hint` is the grey prompt editors see in a blank item. cms.js also keeps visible section backgrounds alternating.
   - Any element with `data-edit="key"` (text) or `data-edit-img="key"` (photo slot) can be edited and is saved to the `site_content` table. The text written in the HTML is only the default; a saved value overrides it.
   - Every save is also logged to `site_content_history`, which powers "Previous versions" and Restore.
   - Before saving, it checks `updated_at` stamps and asks before overwriting another editor's newer change.

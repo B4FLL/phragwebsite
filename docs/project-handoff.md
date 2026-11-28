@@ -34,10 +34,11 @@ Read this first if you are an AI agent (or a new developer) picking up this repo
   - `getMember()` returns the signed-in user and their roles. It calls the `is_editor` and `is_expert` RPCs with a retry, and falls back to the last good answer cached in `sessionStorage` (`phragRoles`).
   - `photoUrls(bucket, paths)` returns signed URLs that last 1 hour. If signing fails (for example, before the SQL is re-run), it falls back to public URLs.
 - `script.js` handles the mobile menu toggle and the footer year.
-- `signin-bar.js` is the "Sign in or sign up" bar under the header for signed-out visitors.
-  - It has three tabs: Community, Team member and Expert.
-  - Closing it hides it for 30 days (`phragBarClosedUntil`); the "Sign in" menu item reopens it.
-  - On phones (≤700px) it starts compact, as one line you tap to open.
+- `signin-bar.js` runs the account button at the end of the menu (`.nav-account`) and the sign-in panel under the header.
+  - The menu is Project, Map, Neighborhood, Identify, Team, then the button. Each HTML page has its own copy.
+  - In the HTML the button is a plain "Sign in" link to `login.html`. For signed-out visitors, clicking it opens a one-line email form instead; the panel starts closed.
+  - "Team or expert sign-in" in the panel goes to the Members page.
+  - For signed-in visitors it reads "My account" and goes to the Members page. This is how members reach that page. `login.js` sets the label there.
 - `cms.js` is in-page editing for editors.
   - Any element with `data-edit="key"` (text) or `data-edit-img="key"` (photo slot) can be edited and is saved to the `site_content` table. The text written in the HTML is only the default; a saved value overrides it.
   - Every save is also logged to `site_content_history`, which powers "Previous versions" and Restore.
@@ -75,7 +76,7 @@ When `config.js` has empty values, `phrag.demo` is true, `sb` is null, and every
 
 - **Signing in:** setting `phragDemoMember = "1"` makes you a demo member with **both** editor and expert roles.
 - **Data:** `phragReports`, `phragPosts`, `phragComments`, `phragFlags`, `phragHerds`, `phragContent`, `phragContentHistory`.
-- **Preferences:** `phragFilters` (map checkboxes), `phragBarClosedUntil`, `phragSignInAs`, `phragName`, and `phragMapHint` (in `sessionStorage`).
+- **Preferences:** `phragFilters` (map checkboxes), `phragName`, and `phragMapHint` (in `sessionStorage`).
 - **Storage can be blocked:** wrap `localStorage` access in try/catch, as the existing code does.
 - **Not in demo:** "Show more photos" is hidden, and photo URLs are local.
 

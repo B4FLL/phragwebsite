@@ -6,6 +6,8 @@ async function render() {
   $("demo-note").hidden = !demo;
   $("demo-btn").hidden = !demo;
   const member = await getMember();
+  // The menu's account button. This page keeps it current itself, since it signs people in and out.
+  document.querySelector(".nav-account").textContent = member ? "My account" : "Sign in";
   $("signed-out").hidden = !!member;
   $("signed-in").hidden = !member;
   if (!member) return;
@@ -21,12 +23,6 @@ async function render() {
     : "Community member";
   $("status-hint").textContent = hints.join(" ");
   $("dashboard-link").hidden = !member.isExpert;
-  // If they picked Team member or Expert in the sign-in bar but this email lacks that role, say so.
-  let asked = null;
-  try { asked = localStorage.getItem("phragSignInAs"); localStorage.removeItem("phragSignInAs"); } catch (e) { /* storage blocked */ }
-  const lacking = !member.roleError && ((asked === "member" && !member.isEditor) || (asked === "expert" && !member.isExpert));
-  $("role-mismatch").hidden = !lacking;
-  if (lacking) $("role-mismatch").textContent = `This email isn't on the ${asked === "member" ? "team member (editor)" : "expert"} list. Ask an admin to add it, then reload.`;
   $("role-error").hidden = !member.roleError;
   $("no-role").hidden = member.isEditor || member.isExpert || member.roleError;
 }

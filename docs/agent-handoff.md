@@ -49,6 +49,13 @@ This is a snapshot. Check the code, `git log` and the live site before relying o
 
 `README.md` describes how these behave.
 
+**Later on 11-27: simpler menu and sign-in** (branch `simpler-signin-and-menu`)
+
+- The menu went from eight links to Project, Map, Neighborhood, Identify, Team and an account button. The Solution and Experts sections are still on the home page.
+- The always-visible sign-in bar and its three tabs were replaced by a panel that opens from **Sign in**. The "this email isn't on the list" message that depended on the tabs was removed from the Members page.
+- Checked in headless Edge at 1200px and 375px on all seven pages, in demo mode, signed in and out. A stand-in database checked what the email form sends. No real sign-in email was sent, and no real phone was used.
+- To make a headless capture wait, serve a slow image from a second local server and make sure both servers are ready first. Captures taken without a real wait can happen before database replies are handled.
+
 ## How things were checked, and what wasn't
 
 **Browser checks.** The assistant used headless Edge against a local server (a PowerShell `HttpListener` on `localhost:8765`). A temporary `_t.html` in the project root injected test scripts and was deleted afterwards. For demo mode it replaced the `config.js` tag with `window.PHRAG_CONFIG={}`. For signed-in code it replaced the Supabase CDN tag with a stand-in. Results were read from the page title, DOM dumps or screenshots.
